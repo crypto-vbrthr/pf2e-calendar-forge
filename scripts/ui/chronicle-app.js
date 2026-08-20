@@ -130,6 +130,7 @@ export class ChronicleApp extends HandlebarsApplicationMixin(ApplicationV2) {
   #editableCopy(source) {
     const copy = structuredClone(source);
     copy.id = this.#uniqueId(`${source.id}-custom`);
+    copy.source = source.providerId && source.providerId !== "calendar-forge-world" ? { providerId: source.providerId, definitionId: source.id, contentVersion: source.providerContentVersion ?? null } : (source.source ? structuredClone(source.source) : undefined);
     copy.providerId = "calendar-forge-world";
     copy.label = { value: labelValue(source.label, source.id) };
     copy.description = { value: labelValue(source.description, "") };

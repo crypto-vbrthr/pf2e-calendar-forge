@@ -1,0 +1,64 @@
+<div class="cf-provider-shell">
+  <header class="cf-manager-header">
+    <div>
+      <div class="cf-eyebrow">{{localize "CALENDAR_FORGE.ProviderManager.Eyebrow"}}</div>
+      <h2>{{localize "CALENDAR_FORGE.ProviderManager.Heading"}}</h2>
+      <p>{{localize "CALENDAR_FORGE.ProviderManager.Intro"}}</p>
+    </div>
+    <div class="cf-provider-contract">
+      <span>API {{apiVersion}}</span>
+      <span>Schema {{schemaVersion}}</span>
+    </div>
+  </header>
+
+  {{#if hasProviders}}
+    <div class="cf-provider-grid">
+      {{#each providers as |provider|}}
+        <article class="cf-provider-card">
+          <header>
+            <div>
+              <h3><i class="fa-solid fa-puzzle-piece"></i> {{provider.labelText}}</h3>
+              <div class="cf-provider-id">{{provider.id}}</div>
+            </div>
+            <div class="cf-provider-version">v{{provider.contentVersion}}</div>
+          </header>
+
+          {{#if provider.descriptionText}}<p class="cf-provider-description">{{provider.descriptionText}}</p>{{/if}}
+
+          <div class="cf-provider-meta">
+            <span>{{localize "CALENDAR_FORGE.ProviderManager.Schema"}} {{provider.schemaVersion}}</span>
+            <span>{{provider.total}} {{localize "CALENDAR_FORGE.ProviderManager.Definitions"}}</span>
+            {{#if provider.warningCount}}<span class="cf-provider-warning"><i class="fa-solid fa-triangle-exclamation"></i> {{provider.warningCount}}</span>{{/if}}
+          </div>
+
+          <div class="cf-provider-capabilities">
+            {{#each provider.capabilities as |capability|}}<span>{{capability}}</span>{{/each}}
+          </div>
+
+          {{#if provider.warnings.length}}
+            <details class="cf-provider-warnings">
+              <summary>{{localize "CALENDAR_FORGE.ProviderManager.Warnings"}}</summary>
+              <ul>{{#each provider.warnings as |warning|}}<li>{{warning}}</li>{{/each}}</ul>
+            </details>
+          {{/if}}
+
+          {{#if provider.hasDefaults}}
+            <div class="cf-provider-defaults">
+              <strong>{{localize "CALENDAR_FORGE.ProviderManager.SuggestedDefaults"}}</strong>
+              {{#each provider.defaultsSummary as |line|}}<span>{{line}}</span>{{/each}}
+              <button type="button" data-action="applyDefaults" data-provider-id="{{provider.id}}">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> {{localize "CALENDAR_FORGE.ProviderManager.ApplyDefaults"}}
+              </button>
+            </div>
+          {{/if}}
+        </article>
+      {{/each}}
+    </div>
+  {{else}}
+    <div class="cf-provider-empty">
+      <i class="fa-solid fa-puzzle-piece"></i>
+      <h3>{{localize "CALENDAR_FORGE.ProviderManager.NoProviders"}}</h3>
+      <p>{{localize "CALENDAR_FORGE.ProviderManager.NoProvidersHint"}}</p>
+    </div>
+  {{/if}}
+</div>

@@ -44,6 +44,32 @@ export class EventService {
     this.#events.set(event.id, Object.freeze(structuredClone(event)));
   }
 
+  unregister(id) {
+    return this.#events.delete(id);
+  }
+
+  unregisterByProvider(providerId) {
+    let removed = 0;
+    for (const [id, event] of this.#events.entries()) {
+      if (event.providerId !== providerId) continue;
+      this.#events.delete(id);
+      removed += 1;
+    }
+    return removed;
+  }
+
+  has(id) {
+    return this.#events.has(id);
+  }
+
+  get(id) {
+    return this.#events.get(id) ?? null;
+  }
+
+  listRegistered() {
+    return [...this.#events.values()];
+  }
+
   registerProvider(id, provider) {
     if (!id || typeof provider !== "function") throw new TypeError("Event provider requires id and function");
     this.#providers.set(id, provider);

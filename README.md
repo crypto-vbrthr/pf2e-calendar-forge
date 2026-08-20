@@ -1,207 +1,150 @@
-# Calendar Forge 0.4.0
+# Calendar Forge 0.5.0
 
-Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock. Calendar Forge translates that absolute time into localized calendar dates, regional contexts, seasons, moon states, astronomy, holidays, and campaign/world chronology for users and other modules.
+Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock. Calendar Forge translates that absolute time into localized calendar dates, regional contexts, seasons, moon states, astronomy, holidays, and chronology for users and other modules.
 
-## 0.4.0 – Holidays, Historical Events & Chronicle
+## 0.5.0 – Provider Hardening & Golarion Integration Foundation
 
-### Holidays
+0.5.0 hardens the external-content boundary before the first setting package is built. The goal is that a module such as **Calendar Forge: Golarion** can provide large localized datasets without owning time, copying content into world settings, or relying on private Calendar Forge internals.
 
-Holidays are now first-class Calendar Forge content.
+### Transactional provider registration
 
-A holiday can be:
+Provider registration now performs a complete preflight before changing any live registry:
 
-- global or restricted to a region;
-- public or GM-only;
-- annually recurring or tied to one specific year;
-- one or several calendar days long;
-- localized by provider modules;
-- categorized and assigned a custom Font Awesome icon;
-- linked to a Foundry document by UUID.
+- definition validation;
+- cross-reference validation between calendars, regions, seasons, moons and events;
+- duplicate and global ID collision detection;
+- Calendar Forge API/schema compatibility checks;
+- provider dependency checks;
+- suggested-default validation;
+- optional localization-key diagnostics.
 
-Multi-day festivals are evaluated using calendar arithmetic, so they can continue correctly across month and year boundaries. A holiday that begins on the final day of a year can therefore remain active on the first days of the following year without any separate running calendar clock.
+If a later unexpected failure occurs while content is being inserted, the registration is rolled back. A broken content pack can therefore no longer leave half of its calendar definitions resident until Foundry is reloaded.
 
-### Historical events
+### Provider dependency contract
 
-Historical events are separate from holidays and support explicit time precision:
-
-- year;
-- month;
-- day;
-- hour;
-- minute;
-- second.
-
-Precision is semantic, not cosmetic. A historical event known only to have happened in a certain year remains a year-level entry and does not receive an invented month, day, or midnight timestamp. Day-or-better precision events also appear as markers on the monthly calendar.
-
-Historical events may be global/regional, public/GM-only, localized, categorized, iconized, and linked to Foundry documents.
-
-### Chronicle
-
-The main Calendar Forge window now has a Chronicle button. The Chronicle is a large, searchable time-line view that can be used while the calendar itself remains closed most of the session.
-
-Filters include:
-
-- regional/world time context;
-- start and end year;
-- holidays;
-- historical events;
-- Campaign Forge/provider events;
-- other external events;
-- text search across names, descriptions, and categories.
-
-Yearly holidays are expanded into concrete occurrences inside the requested range. Historical entries retain their declared precision.
-
-GM users also receive Holidays and History management tabs in the same window. Provider content is read-only and can be duplicated into a world-owned definition before editing.
-
-### Monthly calendar integration
-
-Calendar day markers can now include:
-
-- season changes;
-- moon-phase transitions;
-- astronomical events;
-- holidays;
-- historical events;
-- Campaign Forge or other external provider events.
-
-The day inspector shows holiday/festival progress, historical event time where known, descriptions, and optional Foundry-document links.
-
-## Event provider contract
-
-The existing event-provider mechanism is extended for Chronicle use. This is intended for modules such as Campaign Forge that own their event data and should not duplicate it into Calendar Forge.
+Providers can depend on other providers and require content-version ranges:
 
 ```js
-CalendarForge.api.registerEventProvider("campaign-forge", async (request) => {
-  if (request.type === "date") {
-    // Return events relevant to request.date / request.context.
-    // Canonical Foundry worldTime may be supplied and Calendar Forge
-    // will filter it against the regional calendar day.
-    return [];
-  }
-
-  if (request.type === "chronicle") {
-    // request.range: { fromYear, toYear }
-    // request.context.rangeStartWorldTime / rangeEndWorldTime are canonical
-    // Foundry world-time bounds for modules that store timestamps that way.
-    return [{
-      id: "quest-complete",
-      sourceType: "campaign",
-      label: { value: "The northern gate was reclaimed" },
-      worldTime: 18422311,
-      precision: "second",
-      journalUuid: "JournalEntry.example"
-    }];
-  }
-
-  return [];
-});
+requires: [
+  { id: "calendar-forge-golarion-core", minContentVersion: "1.0.0" },
+  { id: "calendar-forge-golarion-holidays", optional: true }
+]
 ```
 
-Chronicle providers may return either a calendar `date` plus `precision`, or canonical `worldTime`. The latter is especially useful for Campaign Forge because Calendar Forge converts it into the currently requested regional calendar context.
+This allows future setting content to be split cleanly, for example into a Golarion core calendar and optional regional/history packs.
 
-## Provider content additions
+### Compatibility contract
 
-Calendar content modules can now register holidays and historical events alongside calendars, regions, seasons, moons, and astronomy:
-
-```js
-Hooks.once("calendarForgeReady", (api) => {
-  api.providers.register({
-    id: "my-setting-calendar-pack",
-    schemaVersion: 3,
-    contentVersion: "1.0.0",
-
-    calendars: [/* ... */],
-    regionProfiles: [/* ... */],
-
-    holidays: [{
-      id: "harvest-festival",
-      calendarId: "my-calendar",
-      regionId: "my-region",
-      label: { i18n: "MY_PACK.Holidays.HarvestFestival.Name" },
-      description: { i18n: "MY_PACK.Holidays.HarvestFestival.Description" },
-      recurrence: { type: "yearly", monthId: "harvest", day: 17 },
-      durationDays: 3,
-      visibility: "public",
-      icon: "fa-wheat-awn"
-    }],
-
-    historicalEvents: [{
-      id: "founding-of-the-city",
-      calendarId: "my-calendar",
-      label: { i18n: "MY_PACK.History.CityFounded.Name" },
-      description: { i18n: "MY_PACK.History.CityFounded.Description" },
-      precision: "year",
-      date: { year: 812 },
-      visibility: "public",
-      icon: "fa-landmark"
-    }]
-  });
-});
-```
-
-Labels, descriptions, categories, calendar/month/weekday names, seasons, moon names and phases continue to support normal Foundry i18n keys.
-
-## API additions
+A provider can explicitly declare the Calendar Forge contract it supports:
 
 ```js
-await CalendarForge.api.getEventsForDate({ regionId: "varisia" });
-
-await CalendarForge.api.getChronicle({
-  regionId: "varisia",
-  fromYear: 4700,
-  toYear: 4724,
-  eventType: "all", // all | holiday | historical | campaign | external
-  query: "war"
-});
-
-CalendarForge.api.holidays.list();
-CalendarForge.api.historicalEvents.list();
-CalendarForge.api.openChronicle({ regionId: "varisia" });
-```
-
-`getTemporalContext()` continues to expose `events` for the currently resolved regional calendar day.
-
-## Hooks
-
-0.4.0 adds event-state hooks driven by changes to Foundry world time:
-
-- `calendarForgeEventsChanged(events, context, change)`
-- `calendarForgeHolidaysStarted(holidays, context, change)`
-- `calendarForgeHolidaysEnded(holidays, context, change)`
-
-Existing calendar, day, month, year, region, season, moon, and astronomy hooks remain available.
-
-## Persistence and migration
-
-The world-data object now supports:
-
-```js
-{
-  calendars: [],
-  regions: [],
-  seasonProfiles: [],
-  moonProfiles: [],
-  astronomyEvents: [],
-  holidays: [],
-  historicalEvents: [],
-  anchors: {}
+compatibility: {
+  api: { min: 5, max: 5 },
+  schema: { min: 4, max: 4 }
 }
 ```
 
-Older 0.2.x/0.3.x world data remains migration-safe; missing arrays are initialized automatically. No second running clock is introduced.
+Calendar Forge 0.5.0 exposes **API 5 / Schema 4** through `CalendarForge.api.providerContract`.
+
+### Provider diagnostics and management
+
+The Calendar Forge top bar now contains a small **puzzle-piece** button for GMs. It opens the Content Providers window and shows:
+
+- registered provider ID and content version;
+- provider schema version;
+- content counts;
+- capability badges for calendars, seasons, moons, regions, astronomy, holidays, history and events;
+- localization warnings;
+- suggested world defaults where supplied.
+
+This is deliberately an administrative view rather than a permanent panel.
+
+The public API now supports:
+
+```js
+CalendarForge.api.providers.diagnose(provider);  // no mutation
+CalendarForge.api.providers.validate(provider);  // throws on invalid content
+CalendarForge.api.providers.get(id);
+CalendarForge.api.providers.list();
+CalendarForge.api.providers.listContent(id);
+CalendarForge.api.providers.owns(id, "calendars", calendarId);
+CalendarForge.api.providers.unregister(id);
+CalendarForge.api.providers.applyDefaults(id);
+```
+
+### Suggested defaults without silent takeover
+
+A setting provider may recommend a coherent initial setup:
+
+```js
+defaults: {
+  calendarId: "golarion-ar",
+  regionId: "inner-sea-default",
+  seasonProfileId: "golarion-temperate-north",
+  moonProfileIds: ["golarion-moon"]
+}
+```
+
+Calendar Forge never applies those values automatically. The GM can choose **Apply suggested defaults** in the provider manager, or call the API explicitly. This is particularly important for existing campaigns that activate a setting pack after play has already begun.
+
+### Provider provenance
+
+Every externally supplied definition now records both:
+
+```js
+providerId
+providerContentVersion
+```
+
+When provider content is duplicated into an editable world definition, Calendar Forge preserves its origin:
+
+```js
+source: {
+  providerId,
+  definitionId,
+  contentVersion
+}
+```
+
+Ownership still changes to `calendar-forge-world`, so later provider updates do not overwrite campaign-specific edits.
+
+### Safe unregistration
+
+Provider-owned definitions and static events can now be removed as one unit. Calendar Forge refuses normal unregistration when another registered provider declares a required dependency on that provider. This mainly supports development/hot reload and keeps the contract deterministic for modular setting packs.
+
+### Static event ownership
+
+The event service now exposes provider-aware static-event registration helpers so provider rollback and unregistration can cleanly remove only their own events. Dynamic event providers, such as the intended Campaign Forge bridge, remain separately registered through `registerEventProvider()`.
+
+## Golarion integration foundation
+
+No Pathfinder lore content is baked into Calendar Forge core. 0.5.0 instead freezes the integration shape needed by a separate **Calendar Forge: Golarion** module:
+
+- localized calendar/month/weekday labels;
+- one or more regional contexts;
+- season and moon profiles;
+- holidays and astronomy;
+- historical timeline data;
+- dependency/version metadata;
+- suggested defaults;
+- source provenance for user-created copies.
+
+The next Golarion package can therefore remain a pure content provider and does not need privileged access to Calendar Forge internals.
+
+See `docs/provider-contract.md` and `examples/provider-template.js` for the external-module contract.
 
 ## Core design rule
 
-Calendar Forge never owns a second advancing time value. Time-sensitive Foundry effects, Affliction Forge, and other systems continue to age from Foundry world time. Calendar Forge only answers what that instant means in a configured calendar and regional context.
+Calendar Forge still never owns a second advancing time value. Foundry world time remains canonical. All provider calendars and regional contexts are interpretations of that same instant.
 
 ## Development status
 
-0.4.0 automated coverage includes calendar arithmetic, regional translation, season/moon/astronomy behavior, localization parity, holiday duration across year boundaries, historical precision, Chronicle expansion/filtering, canonical-world-time provider entries, provider content registration, migration safety, launcher integration, and dropdown readability.
+0.5.0 automated coverage includes the existing calendar/time/season/moon/astronomy/holiday/chronicle suite plus transactional provider rollback, dependency enforcement, compatibility ranges, provider ownership inspection, clean unregistration, suggested-default application, provider diagnostics UI exposure, localization parity, and world-data migration safety.
 
 Still deliberately deferred:
 
-- physically derived orbital eclipse simulation;
-- complex rule expressions such as “first full moon after the equinox” for holidays;
-- direct Campaign Forge implementation changes;
+- the actual Calendar Forge: Golarion content module;
 - Weather Forge integration changes;
-- a setting-specific content pack such as Calendar Forge: Golarion.
+- Campaign Forge integration changes;
+- physically derived orbital eclipse simulation;
+- complex holiday rule expressions such as “first full moon after the equinox”.

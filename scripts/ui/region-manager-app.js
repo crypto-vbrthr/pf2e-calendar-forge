@@ -57,6 +57,7 @@ export class RegionManagerApp extends HandlebarsApplicationMixin(ApplicationV2) 
       moonProfileIds: this.services.settings.activeMoonProfileIds()
     };
     base.id = this.#uniqueId(`${base.id}-custom`);
+    base.source = source.providerId && source.providerId !== "calendar-forge-world" ? { providerId: source.providerId, definitionId: source.id, contentVersion: source.providerContentVersion ?? null } : (source.source ? structuredClone(source.source) : undefined);
     base.providerId = "calendar-forge-world";
     base.label = { value: resolveLabel(base.label, base.id) };
     return base;

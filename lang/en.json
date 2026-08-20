@@ -9,7 +9,8 @@
       "ManageCalendars": "Manage calendars",
       "ManageRegions": "Manage regional time contexts",
       "ManageTemporalProfiles": "Manage seasons, moons, and astronomy",
-      "OpenChronicle": "Open chronicle, holidays, and historical events"
+      "OpenChronicle": "Open chronicle, holidays, and historical events",
+      "ManageProviders": "Content providers"
     },
     "Sections": {
       "Events": "Events",
@@ -388,6 +389,34 @@
       "DurationDays": "{days} days",
       "FestivalDay": "Day {day} of {duration}",
       "HourSuffix": "h"
+    },
+    "ProviderManager": {
+      "Title": "Calendar Forge · Content Providers",
+      "Eyebrow": "Provider diagnostics",
+      "Heading": "Registered calendar content",
+      "Intro": "External modules can provide calendars, regions, seasons, moons, astronomy, holidays and historical events without copying them into world data.",
+      "Schema": "Schema",
+      "Definitions": "definitions",
+      "Warnings": "Provider warnings",
+      "SuggestedDefaults": "Suggested world defaults",
+      "ApplyDefaults": "Apply suggested defaults",
+      "DefaultsApplied": "Applied suggested defaults from {id}.",
+      "DefaultCalendar": "Calendar: {id}",
+      "DefaultRegion": "Region: {id}",
+      "DefaultSeason": "Season profile: {id}",
+      "DefaultMoons": "Moon profiles: {count}",
+      "NoProviders": "No external providers registered",
+      "NoProvidersHint": "Setting-specific modules such as a future Calendar Forge: Golarion package will appear here after registering through the public provider contract.",
+      "Capability": {
+        "calendars": "Calendars",
+        "seasons": "Seasons",
+        "moons": "Moons",
+        "regions": "Regions",
+        "astronomy": "Astronomy",
+        "holidays": "Holidays",
+        "historical": "History",
+        "events": "Events"
+      }
     }
   }
 }

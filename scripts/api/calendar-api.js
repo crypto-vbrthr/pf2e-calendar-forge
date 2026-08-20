@@ -1,10 +1,15 @@
 import { API_VERSION, SCHEMA_VERSION } from "../constants.js";
 import { formatPartialCalendarDate } from "../localization/date-formatter.js";
 
-export function createCalendarApi({ temporal, providers, registries, events, worldData, settings, openCalendar, openCalendarManager, openRegionManager, openTemporalProfiles, openChronicle }) {
+export function createCalendarApi({ temporal, providers, registries, events, worldData, settings, openCalendar, openCalendarManager, openRegionManager, openTemporalProfiles, openChronicle, openProviderManager }) {
   return Object.freeze({
     version: API_VERSION,
     schemaVersion: SCHEMA_VERSION,
+    providerContract: Object.freeze({
+      apiVersion: API_VERSION,
+      schemaVersion: SCHEMA_VERSION,
+      readyHook: "calendarForgeReady"
+    }),
 
     getWorldTime() {
       return game.time.worldTime;
@@ -109,6 +114,11 @@ export function createCalendarApi({ temporal, providers, registries, events, wor
 
     openChronicle(options = {}) {
       return openChronicle(options);
+    },
+
+    openProviderManager() {
+      if (!game.user?.isGM) return null;
+      return openProviderManager();
     },
 
     providers,

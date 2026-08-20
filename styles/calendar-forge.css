@@ -664,3 +664,77 @@ button.cf-day:hover { background: rgba(200, 173, 114, 0.065); }
   .cf-chronicle-search { grid-column: 1 / -1; }
   .cf-chronicle-entry { grid-template-columns: 130px 30px minmax(0,1fr); }
 }
+
+/* 0.5.0 provider diagnostics */
+.cf-provider-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  min-height: 100%;
+}
+
+.cf-provider-contract {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.cf-provider-contract span,
+.cf-provider-meta span,
+.cf-provider-capabilities span {
+  border: 1px solid color-mix(in srgb, var(--color-border-light-primary, #8b7d65) 55%, transparent);
+  border-radius: 999px;
+  padding: .2rem .55rem;
+  background: rgba(255, 255, 255, .035);
+  font-size: .78rem;
+}
+
+.cf-provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: .85rem;
+  overflow: auto;
+  padding-right: .25rem;
+}
+
+.cf-provider-card {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  border: 1px solid color-mix(in srgb, var(--color-border-light-primary, #8b7d65) 55%, transparent);
+  border-radius: 10px;
+  padding: .85rem;
+  background: rgba(15, 17, 20, .34);
+}
+
+.cf-provider-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cf-provider-card h3 { margin: 0; }
+.cf-provider-id { opacity: .58; font-family: monospace; font-size: .76rem; margin-top: .2rem; }
+.cf-provider-version { font-weight: 700; opacity: .8; white-space: nowrap; }
+.cf-provider-description { margin: 0; opacity: .84; line-height: 1.35; }
+.cf-provider-meta, .cf-provider-capabilities { display: flex; gap: .4rem; flex-wrap: wrap; }
+.cf-provider-warning { color: var(--color-level-warning, #e9b44c); }
+.cf-provider-warnings { font-size: .82rem; }
+.cf-provider-warnings ul { margin: .45rem 0 0 1.15rem; padding: 0; }
+
+.cf-provider-defaults {
+  display: flex;
+  flex-direction: column;
+  gap: .28rem;
+  padding: .65rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .035);
+}
+
+.cf-provider-defaults span { opacity: .78; font-size: .8rem; }
+.cf-provider-defaults button { margin-top: .4rem; align-self: flex-start; }
+.cf-provider-empty { margin: auto; text-align: center; opacity: .72; max-width: 520px; }
+.cf-provider-empty > i { font-size: 2.2rem; margin-bottom: .5rem; }

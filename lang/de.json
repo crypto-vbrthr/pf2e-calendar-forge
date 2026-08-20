@@ -9,7 +9,8 @@
       "ManageCalendars": "Kalender verwalten",
       "ManageRegions": "Regionale Zeitkontexte verwalten",
       "ManageTemporalProfiles": "Jahreszeiten, Monde und Astronomie verwalten",
-      "OpenChronicle": "Chronik, Feiertage und historische Ereignisse öffnen"
+      "OpenChronicle": "Chronik, Feiertage und historische Ereignisse öffnen",
+      "ManageProviders": "Inhaltsprovider"
     },
     "Sections": {
       "Events": "Ereignisse",
@@ -388,6 +389,34 @@
       "DurationDays": "{days} Tage",
       "FestivalDay": "Tag {day} von {duration}",
       "HourSuffix": "Uhr"
+    },
+    "ProviderManager": {
+      "Title": "Calendar Forge · Inhaltsprovider",
+      "Eyebrow": "Provider-Diagnose",
+      "Heading": "Registrierte Kalenderinhalte",
+      "Intro": "Externe Module können Kalender, Regionen, Jahreszeiten, Monde, Astronomie, Feiertage und historische Ereignisse bereitstellen, ohne sie in die Weltdaten zu kopieren.",
+      "Schema": "Schema",
+      "Definitions": "Definitionen",
+      "Warnings": "Provider-Warnungen",
+      "SuggestedDefaults": "Empfohlene Weltstandards",
+      "ApplyDefaults": "Empfohlene Standards übernehmen",
+      "DefaultsApplied": "Empfohlene Standards von {id} wurden übernommen.",
+      "DefaultCalendar": "Kalender: {id}",
+      "DefaultRegion": "Region: {id}",
+      "DefaultSeason": "Jahreszeitenprofil: {id}",
+      "DefaultMoons": "Mondprofile: {count}",
+      "NoProviders": "Keine externen Provider registriert",
+      "NoProvidersHint": "Settingspezifische Module wie ein zukünftiges Calendar Forge: Golarion erscheinen hier, nachdem sie sich über den öffentlichen Provider-Vertrag registriert haben.",
+      "Capability": {
+        "calendars": "Kalender",
+        "seasons": "Jahreszeiten",
+        "moons": "Monde",
+        "regions": "Regionen",
+        "astronomy": "Astronomie",
+        "holidays": "Feiertage",
+        "historical": "Historie",
+        "events": "Ereignisse"
+      }
     }
   }
 }

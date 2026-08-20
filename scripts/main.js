@@ -16,6 +16,7 @@ import { CalendarManagerApp } from "./ui/calendar-manager-app.js";
 import { RegionManagerApp } from "./ui/region-manager-app.js";
 import { TemporalProfilesApp } from "./ui/temporal-profiles-app.js";
 import { ChronicleApp } from "./ui/chronicle-app.js";
+import { ProviderManagerApp } from "./ui/provider-manager-app.js";
 import { installRegionLauncher } from "./ui/region-launcher.js";
 import { validateCalendarDefinition, validateMoonProfile, validateSeasonProfile } from "./validation/definition-validator.js";
 
@@ -34,6 +35,7 @@ let calendarManager = null;
 let regionManager = null;
 let temporalProfiles = null;
 let chronicle = null;
+let providerManager = null;
 let api = null;
 let temporal = null;
 let services = null;
@@ -86,6 +88,12 @@ function openTemporalProfiles(options = {}) {
   return temporalProfiles;
 }
 
+function openProviderManager() {
+  if (!providerManager) providerManager = new ProviderManagerApp(services);
+  providerManager.render({ force: true });
+  return providerManager;
+}
+
 function openChronicle(options = {}) {
   if (!chronicle) chronicle = new ChronicleApp(services, options);
   else {
@@ -115,6 +123,7 @@ async function recomputeContext(reason = "configuration") {
   if (regionManager?.rendered) regionManager.render({ force: true });
   if (temporalProfiles?.rendered) temporalProfiles.render({ force: true });
   if (chronicle?.rendered) chronicle.render({ force: true });
+  if (providerManager?.rendered) providerManager.render({ force: true });
 }
 
 Hooks.once("init", () => {
@@ -153,7 +162,8 @@ Hooks.once("init", () => {
     astronomyRegistry: registries.astronomy,
     holidayRegistry: registries.holidays,
     historicalRegistry: registries.historical,
-    eventService
+    eventService,
+    settings: SettingsAdapter
   });
 
   services = {
@@ -165,11 +175,13 @@ Hooks.once("init", () => {
     regionService,
     settings: SettingsAdapter,
     worldData,
+    providers,
     registries,
     openCalendarManager,
     openRegionManager,
     openTemporalProfiles,
-    openChronicle
+    openChronicle,
+    openProviderManager
   };
 
   api = createCalendarApi({
@@ -183,7 +195,8 @@ Hooks.once("init", () => {
     openCalendarManager,
     openRegionManager,
     openTemporalProfiles,
-    openChronicle
+    openChronicle,
+    openProviderManager
   });
 
   const module = game.modules.get(MODULE_ID);
@@ -252,4 +265,5 @@ Hooks.on("updateWorldTime", async (worldTime, delta, options, userId) => {
   lastContext = current;
   if (app?.rendered) app.render({ force: true });
   if (chronicle?.rendered) chronicle.render({ force: true });
+  if (providerManager?.rendered) providerManager.render({ force: true });
 });

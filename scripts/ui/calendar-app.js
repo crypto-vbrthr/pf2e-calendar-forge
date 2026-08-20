@@ -25,6 +25,7 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
       manageCalendars: CalendarForgeApp.#manageCalendars,
       manageRegions: CalendarForgeApp.#manageRegions,
       manageTemporalProfiles: CalendarForgeApp.#manageTemporalProfiles,
+      manageProviders: CalendarForgeApp.#manageProviders,
       openChronicle: CalendarForgeApp.#openChronicle,
       openEventDocument: CalendarForgeApp.#openEventDocument,
       advanceHour: CalendarForgeApp.#advanceHour,
@@ -184,6 +185,7 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
         calendars: game.i18n.localize("CALENDAR_FORGE.Actions.ManageCalendars"),
         regions: game.i18n.localize("CALENDAR_FORGE.Actions.ManageRegions"),
         temporalProfiles: game.i18n.localize("CALENDAR_FORGE.Actions.ManageTemporalProfiles"),
+        providers: game.i18n.localize("CALENDAR_FORGE.Actions.ManageProviders"),
         chronicle: game.i18n.localize("CALENDAR_FORGE.Actions.OpenChronicle"),
         openDocument: game.i18n.localize("CALENDAR_FORGE.Chronicle.OpenDocument")
       }
@@ -222,6 +224,7 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
   static async #manageCalendars() { this.service.openCalendarManager(); }
   static async #manageRegions() { this.service.openRegionManager(); }
   static async #manageTemporalProfiles() { this.service.openTemporalProfiles(); }
+  static async #manageProviders() { this.service.openProviderManager(); }
   static async #openChronicle() {
     const regionId = this.regionSelection === WORLD_CONTEXT ? null : (this.regionSelection === DEFAULT_CONTEXT ? undefined : this.regionSelection);
     this.service.openChronicle({ mode: "chronicle", regionId });

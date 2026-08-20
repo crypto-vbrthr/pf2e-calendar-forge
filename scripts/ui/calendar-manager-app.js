@@ -12,6 +12,10 @@ function editableLabel(label, fallback = "") {
   return resolveLabel(label, fallback);
 }
 
+function cloneSource(source) {
+  return source ? structuredClone(source) : undefined;
+}
+
 export class CalendarManagerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "calendar-forge-calendar-manager",
@@ -60,6 +64,7 @@ export class CalendarManagerApp extends HandlebarsApplicationMixin(ApplicationV2
   #makeEditableCopy(source) {
     const copy = structuredClone(source);
     copy.id = this.#uniqueId(`${source.id}-custom`);
+    copy.source = source.providerId && source.providerId !== "calendar-forge-world" ? { providerId: source.providerId, definitionId: source.id, contentVersion: source.providerContentVersion ?? null } : cloneSource(source.source);
     copy.providerId = "calendar-forge-world";
     copy.label = { value: editableLabel(source.label, source.id) };
     copy.description = { value: editableLabel(source.description, "") };
