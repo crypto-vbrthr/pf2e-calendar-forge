@@ -10,7 +10,18 @@
       "ManageRegions": "Regionale Zeitkontexte verwalten",
       "ManageTemporalProfiles": "Jahreszeiten, Monde und Astronomie verwalten",
       "OpenChronicle": "Chronik, Feiertage und historische Ereignisse öffnen",
-      "ManageProviders": "Inhaltsprovider"
+      "ManageProviders": "Inhaltsprovider",
+      "PreviousYear": "Vorheriges Jahr",
+      "NextYear": "Nächstes Jahr",
+      "MonthView": "Monatsansicht",
+      "YearView": "Jahresansicht",
+      "JumpToDate": "Zum Datum",
+      "ToggleAlternateNames": "Alternative Namen ein-/ausblenden",
+      "AlternateNamesShort": "Alternativnamen",
+      "ShowAlternateNames": "Alternative Namen anzeigen",
+      "HideAlternateNames": "Alternative Namen ausblenden",
+      "DisplayTools": "Darstellung",
+      "ManagementTools": "Verwaltung"
     },
     "Sections": {
       "Events": "Ereignisse",
@@ -27,7 +38,8 @@
       "ConfirmDeleteRegion": "Diesen regionalen Zeitkontext wirklich löschen?",
       "DeleteFailed": "Löschen nicht möglich:",
       "NoAstronomy": "Keine astronomischen Ereignisse an diesem Tag.",
-      "ConfirmDeleteTemporalDefinition": "Diese benutzerdefinierte Definition wirklich löschen?"
+      "ConfirmDeleteTemporalDefinition": "Diese benutzerdefinierte Definition wirklich löschen?",
+      "InvalidDate": "Das gewählte Datum ist ungültig."
     },
     "Calendars": {
       "Gregorian": "Irdischer Kalender",
@@ -148,6 +160,10 @@
       "DefaultRegion": {
         "Name": "Standardregion",
         "Hint": "Wird über die Calendar-Forge-Oberfläche verwaltet."
+      },
+      "ShowAlternateNames": {
+        "Name": "Alternative Monats- und Wochentagsnamen anzeigen",
+        "Hint": "Blendet, sofern ein Kalender sie bereitstellt, alternative Bezeichnungen zusätzlich zu den eigentlichen Monats- und Wochentagsnamen ein. Diese Einstellung gilt nur für deine Anzeige."
       }
     },
     "RegionSelector": {
@@ -194,7 +210,10 @@
       "Visibility": "Sichtbarkeit",
       "Region": "Region",
       "DurationSeconds": "Dauer in Sekunden",
-      "YearOptional": "Jahr (optional)"
+      "YearOptional": "Jahr (optional)",
+      "AlternateName": "Alternativer Name",
+      "AlternateShort": "Alt. kurz",
+      "AlternateExample": "z. B. irdische Bezeichnung"
     },
     "CalendarManager": {
       "Title": "Calendar Forge – Kalenderdefinitionen",
@@ -216,7 +235,7 @@
       "LeapRules": "Schaltregeln",
       "Formats": "Datumsformate",
       "Anchor": "Zeitanker",
-      "FormatHelp": "Verfügbare Platzhalter: {weekday}, {weekdayShort}, {day}, {month}, {monthShort}, {year}, {era}, {hour}, {minute}, {second}.",
+      "FormatHelp": "Verfügbare Platzhalter: {weekday}, {weekdayShort}, {weekdayAlternate}, {weekdayAlternateShort}, {day}, {month}, {monthShort}, {monthAlternate}, {monthAlternateShort}, {year}, {era}, {hour}, {minute}, {second}.",
       "AnchorHelp": "Dieser Anker ordnet genau einen Foundry-worldTime-Wert einem Datum dieses Kalenders zu. Calendar Forge führt weiterhin keine zweite laufende Uhr.",
       "NoCalendars": "Es ist kein Kalender registriert.",
       "NewMonth": "Neuer Monat",
@@ -388,7 +407,12 @@
       "DocumentNotFound": "Das verknüpfte Foundry-Dokument konnte nicht geöffnet werden.",
       "DurationDays": "{days} Tage",
       "FestivalDay": "Tag {day} von {duration}",
-      "HourSuffix": "Uhr"
+      "HourSuffix": "Uhr",
+      "CurrentYear": "Aktuelles Jahr",
+      "ResetFilters": "Filter zurücksetzen",
+      "Entries": "Einträge",
+      "ToggleSort": "Sortierreihenfolge umkehren",
+      "ShowInCalendar": "Im Kalender zeigen"
     },
     "ProviderManager": {
       "Title": "Calendar Forge · Inhaltsprovider",
@@ -422,6 +446,14 @@
       "ClockAligned": "Kalender von {id} wurde mit der Systemuhr synchronisiert.",
       "ClockAlignment": "Systemuhr-Ausrichtung",
       "ClockAlignmentDescription": "Dieser Provider kann seinen Kalenderanker an die Zeitbasis des Spielsystems anpassen."
+    },
+    "Legend": {
+      "SeasonChange": "Jahreszeitenwechsel",
+      "MoonPhase": "Mondphase",
+      "Astronomy": "Astronomie",
+      "Holiday": "Feiertag",
+      "Historical": "Historie",
+      "Campaign": "Kampagne"
     }
   }
 }

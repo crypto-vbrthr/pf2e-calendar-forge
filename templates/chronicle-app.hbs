@@ -34,7 +34,11 @@
           <span>{{localize "CALENDAR_FORGE.Chronicle.Search"}}</span>
           <input type="search" name="chronicle.query" value="{{query}}" placeholder="{{localize 'CALENDAR_FORGE.Chronicle.SearchPlaceholder'}}">
         </label>
-        <button type="button" class="cf-primary" data-action="applyFilters"><i class="fa-solid fa-filter"></i> {{localize "CALENDAR_FORGE.Chronicle.Apply"}}</button>
+        <div class="cf-chronicle-filter-actions">
+          <button type="button" class="cf-primary" data-action="applyFilters"><i class="fa-solid fa-filter"></i> {{localize "CALENDAR_FORGE.Chronicle.Apply"}}</button>
+          <button type="button" data-action="currentYear" data-tooltip="{{localize 'CALENDAR_FORGE.Chronicle.CurrentYear'}}"><i class="fa-solid fa-calendar-check"></i></button>
+          <button type="button" data-action="resetFilters" data-tooltip="{{localize 'CALENDAR_FORGE.Chronicle.ResetFilters'}}"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+        </div>
       </section>
 
       <header class="cf-chronicle-heading">
@@ -42,7 +46,14 @@
           <div class="cf-eyebrow">{{calendarLabel}} · {{regionLabel}}</div>
           <h2>{{localize "CALENDAR_FORGE.Chronicle.Heading"}}</h2>
         </div>
-        <div class="cf-chronicle-range">{{fromYear}} – {{toYear}}</div>
+        <div class="cf-chronicle-heading-tools">
+          <div class="cf-chronicle-summary">
+            <span class="cf-chip">{{entryCount}} {{localize "CALENDAR_FORGE.Chronicle.Entries"}}</span>
+            {{#each entryCounts as |summary|}}{{#if summary.count}}<span class="cf-chip cf-chip-muted">{{summary.label}}: {{summary.count}}</span>{{/if}}{{/each}}
+          </div>
+          <div class="cf-chronicle-range">{{fromYear}} – {{toYear}}</div>
+          <button type="button" class="cf-icon-button" data-action="toggleSort" data-tooltip="{{localize 'CALENDAR_FORGE.Chronicle.ToggleSort'}}"><i class="fa-solid {{#if sortDescending}}fa-arrow-down-wide-short{{else}}fa-arrow-up-wide-short{{/if}}"></i></button>
+        </div>
       </header>
 
       <section class="cf-chronicle-list">
@@ -58,7 +69,10 @@
                 {{#if entry.durationLabel}}<span class="cf-chip cf-chip-muted">{{entry.durationLabel}}</span>{{/if}}
               </div>
               {{#if entry.descriptionText}}<p>{{entry.descriptionText}}</p>{{/if}}
-              {{#if entry.journalUuid}}<button type="button" class="cf-link-button" data-action="openDocument" data-uuid="{{entry.journalUuid}}"><i class="fa-solid fa-book"></i> {{localize "CALENDAR_FORGE.Chronicle.OpenDocument"}}</button>{{/if}}
+              <div class="cf-chronicle-entry-actions">
+                {{#if entry.canNavigate}}<button type="button" class="cf-link-button" data-action="openInCalendar" data-world-time="{{entry.navigationWorldTime}}"><i class="fa-solid fa-calendar-day"></i> {{localize "CALENDAR_FORGE.Chronicle.ShowInCalendar"}}</button>{{/if}}
+                {{#if entry.journalUuid}}<button type="button" class="cf-link-button" data-action="openDocument" data-uuid="{{entry.journalUuid}}"><i class="fa-solid fa-book"></i> {{localize "CALENDAR_FORGE.Chronicle.OpenDocument"}}</button>{{/if}}
+              </div>
             </div>
           </article>
         {{else}}

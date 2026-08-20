@@ -1,5 +1,5 @@
 import { CalendarEngine } from "../calendar/calendar-engine.js";
-import { formatCalendarDate, formatClock, formatPrecisionTime } from "../localization/date-formatter.js";
+import { formatCalendarDate, formatClock, formatPrecisionTime, getCalendarNameSet } from "../localization/date-formatter.js";
 import { resolveLabel } from "../localization/label-resolver.js";
 
 function hasOwn(object, key) {
@@ -145,10 +145,13 @@ export class TemporalContextService {
       }
     }
 
+    const names = getCalendarNameSet(date, calendar);
+
     const secondsPerDay = CalendarEngine.secondsPerDay(calendar);
     const secondsPerHour = CalendarEngine.secondsPerHour(calendar);
     const secondsPerMinute = CalendarEngine.secondsPerMinute(calendar);
     const timeSeconds = date.hour * secondsPerHour + date.minute * secondsPerMinute + date.second;
+    const includeAlternateNames = Boolean(options.includeAlternateNames);
 
     return {
       worldTime,
@@ -169,7 +172,8 @@ export class TemporalContextService {
         weekdayId: date.weekdayId,
         weekdayIndex: date.weekdayIndex,
         dayOfYear: date.dayOfYear,
-        yearProgress: date.yearProgress
+        yearProgress: date.yearProgress,
+        names
       },
       time: {
         hour: date.hour,
@@ -188,9 +192,9 @@ export class TemporalContextService {
         moonProfileIds: [...resolved.moonProfileIds]
       },
       formatted: {
-        date: formatCalendarDate(date, calendar),
+        date: formatCalendarDate(date, calendar, { includeAlternate: includeAlternateNames }),
         time: formatClock(date, calendar),
-        dateTime: formatCalendarDate(date, calendar, { includeTime: true })
+        dateTime: formatCalendarDate(date, calendar, { includeTime: true, includeAlternate: includeAlternateNames })
       },
       raw: { date, calendar, region: resolved.region }
     };

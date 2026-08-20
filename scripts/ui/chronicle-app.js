@@ -29,7 +29,11 @@ export class ChronicleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       duplicateDefinition: ChronicleApp.#duplicateDefinition,
       saveDefinition: ChronicleApp.#saveDefinition,
       deleteDefinition: ChronicleApp.#deleteDefinition,
-      openDocument: ChronicleApp.#openDocument
+      openDocument: ChronicleApp.#openDocument,
+      resetFilters: ChronicleApp.#resetFilters,
+      currentYear: ChronicleApp.#currentYear,
+      toggleSort: ChronicleApp.#toggleSort,
+      openInCalendar: ChronicleApp.#openInCalendar
     }
   };
 
@@ -47,6 +51,7 @@ export class ChronicleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.toYear = Number(options.toYear ?? current.year + 1);
     this.query = String(options.query ?? "");
     this.eventType = options.eventType ?? "all";
+    this.sortDirection = options.sortDirection === "desc" ? "desc" : "asc";
     this.selectedId = null;
     this.draft = null;
     this.isNew = false;
@@ -203,6 +208,13 @@ export class ChronicleApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.render({ force: true });
       }, { once: true });
     }
+    for (const input of root?.querySelectorAll?.(".cf-chronicle-filterbar input, .cf-chronicle-filterbar select") ?? []) {
+      input.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        root.querySelector('[data-action="applyFilters"]')?.click();
+      });
+    }
   }
 
   async _prepareContext(options) {
@@ -245,13 +257,39 @@ export class ChronicleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       });
       entries = entries.map((entry) => ({
         ...entry,
-        formattedDate: formatPartialCalendarDate(entry.date, entry.precision ?? "day", calendar),
+        formattedDate: formatPartialCalendarDate(entry.date, entry.precision ?? "day", calendar, { includeAlternate: this.services.settings.showAlternateNames() }),
         sourceLabel: this.#sourceLabel(entry),
         durationLabel: entry.type === "holiday" && Number(entry.durationDays ?? 1) > 1
           ? game.i18n.format("CALENDAR_FORGE.Chronicle.DurationDays", { days: Number(entry.durationDays) })
           : ""
       }));
     }
+
+    if (this.mode === "chronicle") {
+      entries = entries.map((entry) => {
+        const precision = entry.precision ?? "day";
+        const rank = ["year", "month", "day", "hour", "minute", "second"].indexOf(precision);
+        const monthId = rank >= 1 ? entry.date?.monthId : calendar.months[0]?.id;
+        const day = rank >= 2 ? Number(entry.date?.day ?? 1) : 1;
+        let navigationWorldTime = null;
+        try {
+          navigationWorldTime = this.services.temporal.toWorldTime({
+            year: Number(entry.date?.year),
+            monthId,
+            day,
+            hour: rank >= 3 ? Number(entry.date?.hour ?? 0) : 0,
+            minute: rank >= 4 ? Number(entry.date?.minute ?? 0) : 0,
+            second: rank >= 5 ? Number(entry.date?.second ?? 0) : 0
+          }, this.#contextOptions());
+        } catch (_error) { /* partial or provider-specific dates may not navigate */ }
+        return { ...entry, navigationWorldTime, canNavigate: Number.isFinite(Number(navigationWorldTime)) };
+      });
+      if (this.sortDirection === "desc") entries.reverse();
+    }
+
+    const entryCounts = this.mode === "chronicle"
+      ? ["holiday", "historical", "campaign", "external"].map((type) => ({ type, label: game.i18n.localize(`CALENDAR_FORGE.Chronicle.EventTypes.${type}`), count: entries.filter((entry) => (entry.sourceType ?? entry.type ?? "external") === type || (type === "external" && !["holiday", "historical", "campaign"].includes(entry.sourceType ?? entry.type))).length }))
+      : [];
 
     const result = {
       mode: this.mode,
@@ -266,7 +304,11 @@ export class ChronicleApp extends HandlebarsApplicationMixin(ApplicationV2) {
       toYear: this.toYear,
       query: this.query,
       eventType: this.eventType,
+      sortDirection: this.sortDirection,
+      sortDescending: this.sortDirection === "desc",
       entries,
+      entryCounts,
+      entryCount: entries.length,
       eventTypeOptions: ["all", "holiday", "historical", "campaign", "external"].map((id) => ({ id, label: game.i18n.localize(`CALENDAR_FORGE.Chronicle.EventTypes.${id}`), selected: this.eventType === id })),
       labels: {
         chronicle: game.i18n.localize("CALENDAR_FORGE.Chronicle.Tabs.Chronicle"),
@@ -356,6 +398,34 @@ export class ChronicleApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.query = root.querySelector('[name="chronicle.query"]')?.value ?? "";
     this.eventType = root.querySelector('[name="chronicle.eventType"]')?.value ?? "all";
     this.render({ force: true });
+  }
+
+  static async #resetFilters() {
+    const current = this.services.temporal.getDate(this.#contextOptions());
+    this.fromYear = Number(current.year) - 1;
+    this.toYear = Number(current.year) + 1;
+    this.query = "";
+    this.eventType = "all";
+    this.render({ force: true });
+  }
+
+  static async #currentYear() {
+    const current = this.services.temporal.getDate(this.#contextOptions());
+    this.fromYear = Number(current.year);
+    this.toYear = Number(current.year);
+    this.render({ force: true });
+  }
+
+  static async #toggleSort() {
+    this.sortDirection = this.sortDirection === "desc" ? "asc" : "desc";
+    this.render({ force: true });
+  }
+
+  static async #openInCalendar(_event, target) {
+    const worldTime = Number(target.dataset.worldTime);
+    if (!Number.isFinite(worldTime)) return;
+    const regionId = this.regionSelection === WORLD_CONTEXT ? null : (this.regionSelection === DEFAULT_CONTEXT ? undefined : this.regionSelection);
+    this.services.openCalendar({ worldTime, regionId, viewMode: "month" });
   }
 
   static async #selectDefinition(_event, target) {

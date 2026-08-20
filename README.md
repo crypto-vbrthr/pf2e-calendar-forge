@@ -1,7 +1,65 @@
-# Calendar Forge 0.5.1
+# Calendar Forge 0.6.1
 
 Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock. Calendar Forge translates that absolute time into localized calendar dates, regional contexts, seasons, moon states, astronomy, holidays, and chronology for users and other modules.
 
+
+
+## 0.6.1 – UI Polish
+
+0.6.1 is a small finishing pass before external integrations. It does not change the Calendar Forge data or provider contracts.
+
+- the alternate-name toggle is now a clearly labelled control instead of an icon that has to be guessed;
+- its tooltip changes between **Show alternate names** and **Hide alternate names**, and the active state gains an explicit check mark;
+- display, content and GM-management controls are visually grouped more clearly;
+- primary toolbar buttons expose `aria-label` / `aria-pressed` state and receive visible keyboard focus;
+- season progress and moon illumination are rendered as explicit percentages, avoiding ambiguous values such as `0` where `0%` is meant;
+- compact windows collapse the alternate-name text back to the icon while preserving tooltip and pressed-state semantics.
+
+The provider contract remains **API 5 / Schema 4** and Calendar Forge still uses Foundry `game.time.worldTime` as its sole running clock.
+
+## 0.6.0 – UX & Chronicle Polish
+
+0.6.0 turns the existing calendar and chronicle services into a more comfortable day-to-day interface while keeping Foundry `game.time.worldTime` as the only running clock.
+
+### Alternate calendar names
+
+Months and weekdays may now carry optional `alternateLabel` and `alternateShortLabel` values in addition to their canonical names. These labels are deliberately generic rather than Earth-specific: a provider can use them for Earth equivalents such as `Rova (September)`, for a second cultural name, or leave them empty for calendars where no meaningful correspondence exists.
+
+Each client can enable **Show alternate month and weekday names** in module settings or toggle the language button in Calendar Forge. The preference changes presentation only. Integrations can always read both canonical and alternate labels from `getTemporalContext().calendar.names`.
+
+Example provider content:
+
+```js
+{
+  id: "rova",
+  days: 30,
+  label: { i18n: "MY_PACK.Months.Rova" },
+  alternateLabel: { i18n: "CALENDAR_FORGE.Months.September" },
+  alternateShortLabel: { i18n: "CALENDAR_FORGE.Months.SeptemberShort" }
+}
+```
+
+### Calendar UX
+
+- large month view retained as the main working surface;
+- new full **year overview** with compact month grids and special-day indicators;
+- month/year view toggle and year navigation;
+- direct **jump to date** controls;
+- marker legend for seasons, moon phases, astronomy, holidays, history and Campaign/provider events;
+- alternate names appear as restrained secondary labels rather than replacing setting names;
+- improved responsive layout for large and smaller Foundry windows.
+
+### Chronicle polish
+
+The Chronicle now supports quick **current year** and **reset filters** actions, ascending/descending order, entry/source summaries, Enter-to-apply filtering, and a **Show in calendar** action that jumps the main Calendar Forge window directly to an event. Partial historical precision is preserved: year-only and month-only entries navigate to the first known date without inventing a more precise historical timestamp in storage.
+
+### Astronomy range query
+
+The astronomy service now exposes an efficient range query used by the year overview so fixed and cyclic events can be marked without calculating a full temporal context for every single day.
+
+### Compatibility
+
+The provider contract remains **API 5 / Schema 4**. Alternate labels are optional additive fields, so existing providers continue to work unchanged.
 
 ## 0.5.1 – System Clock Anchor Alignment
 
@@ -148,7 +206,7 @@ Calendar Forge still never owns a second advancing time value. Foundry world tim
 
 ## Development status
 
-0.5.0 automated coverage includes the existing calendar/time/season/moon/astronomy/holiday/chronicle suite plus transactional provider rollback, dependency enforcement, compatibility ranges, provider ownership inspection, clean unregistration, suggested-default application, provider diagnostics UI exposure, localization parity, and world-data migration safety.
+0.6.0 automated coverage includes the existing calendar/time/season/moon/astronomy/holiday/chronicle suite plus transactional provider rollback, dependency enforcement, compatibility ranges, provider ownership inspection, clean unregistration, suggested-default application, provider diagnostics UI exposure, localization parity, and world-data migration safety.
 
 Still deliberately deferred:
 

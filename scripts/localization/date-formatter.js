@@ -4,16 +4,55 @@ function pad(value, width = 2) {
   return String(value).padStart(width, "0");
 }
 
-export function formatCalendarDate(date, calendar, { includeTime = false } = {}) {
+function distinctAlternate(primary, alternate) {
+  const a = String(primary ?? "").trim();
+  const b = String(alternate ?? "").trim();
+  if (!b || a.localeCompare(b, undefined, { sensitivity: "accent" }) === 0) return "";
+  return b;
+}
+
+export function getCalendarNameSet(date, calendar) {
   const month = calendar.months[date.monthIndex];
   const weekday = date.weekdayIndex == null ? null : calendar.week?.days?.[date.weekdayIndex];
+  const monthLabel = resolveLabel(month?.label, month?.id ?? "");
+  const weekdayLabel = resolveLabel(weekday?.label, weekday?.id ?? "");
+  const monthAlternate = distinctAlternate(monthLabel, resolveLabel(month?.alternateLabel, ""));
+  const weekdayAlternate = distinctAlternate(weekdayLabel, resolveLabel(weekday?.alternateLabel, ""));
+  return {
+    month: monthLabel,
+    monthShort: resolveLabel(month?.shortLabel ?? month?.label, month?.id ?? ""),
+    monthAlternate,
+    monthAlternateShort: distinctAlternate(
+      resolveLabel(month?.shortLabel ?? month?.label, month?.id ?? ""),
+      resolveLabel(month?.alternateShortLabel ?? month?.alternateLabel, "")
+    ),
+    weekday: weekdayLabel,
+    weekdayShort: resolveLabel(weekday?.shortLabel ?? weekday?.label, weekday?.id ?? ""),
+    weekdayAlternate,
+    weekdayAlternateShort: distinctAlternate(
+      resolveLabel(weekday?.shortLabel ?? weekday?.label, weekday?.id ?? ""),
+      resolveLabel(weekday?.alternateShortLabel ?? weekday?.alternateLabel, "")
+    )
+  };
+}
+
+function withAlternate(primary, alternate, includeAlternate) {
+  return includeAlternate && alternate ? `${primary} (${alternate})` : primary;
+}
+
+export function formatCalendarDate(date, calendar, { includeTime = false, includeAlternate = false } = {}) {
+  const names = getCalendarNameSet(date, calendar);
   const values = {
     year: date.year,
-    month: resolveLabel(month?.label, month?.id ?? ""),
-    monthShort: resolveLabel(month?.shortLabel ?? month?.label, month?.id ?? ""),
+    month: withAlternate(names.month, names.monthAlternate, includeAlternate),
+    monthShort: withAlternate(names.monthShort, names.monthAlternateShort, includeAlternate),
+    monthAlternate: names.monthAlternate,
+    monthAlternateShort: names.monthAlternateShort,
     day: date.day,
-    weekday: resolveLabel(weekday?.label, weekday?.id ?? ""),
-    weekdayShort: resolveLabel(weekday?.shortLabel ?? weekday?.label, weekday?.id ?? ""),
+    weekday: withAlternate(names.weekday, names.weekdayAlternate, includeAlternate),
+    weekdayShort: withAlternate(names.weekdayShort, names.weekdayAlternateShort, includeAlternate),
+    weekdayAlternate: names.weekdayAlternate,
+    weekdayAlternateShort: names.weekdayAlternateShort,
     era: resolveLabel(calendar.era, ""),
     hour: pad(date.hour ?? 0),
     minute: pad(date.minute ?? 0),
@@ -34,7 +73,6 @@ export function formatClock(date, calendar = null) {
   return `${pad(date.hour ?? 0, hourWidth)}:${pad(date.minute ?? 0, minuteWidth)}`;
 }
 
-
 export function formatPrecisionTime(date, precision, calendar = null) {
   const hoursPerDay = Number(calendar?.time?.hoursPerDay ?? 24);
   const minutesPerHour = Number(calendar?.time?.minutesPerHour ?? 60);
@@ -48,9 +86,11 @@ export function formatPrecisionTime(date, precision, calendar = null) {
   return "";
 }
 
-export function formatPartialCalendarDate(date, precision, calendar) {
+export function formatPartialCalendarDate(date, precision, calendar, { includeAlternate = false } = {}) {
   const month = date?.monthId ? calendar.months.find((entry) => entry.id === date.monthId) : null;
-  const monthLabel = resolveLabel(month?.label, month?.id ?? "");
+  const monthPrimary = resolveLabel(month?.label, month?.id ?? "");
+  const monthAlternate = distinctAlternate(monthPrimary, resolveLabel(month?.alternateLabel, ""));
+  const monthLabel = withAlternate(monthPrimary, monthAlternate, includeAlternate);
   const era = resolveLabel(calendar.era, "");
   const year = Number(date?.year ?? 0);
   const parts = [];

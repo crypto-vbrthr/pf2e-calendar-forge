@@ -20,7 +20,7 @@ export class CalendarManagerApp extends HandlebarsApplicationMixin(ApplicationV2
   static DEFAULT_OPTIONS = {
     id: "calendar-forge-calendar-manager",
     classes: ["calendar-forge-manager", "calendar-forge-calendar-manager"],
-    position: { width: 1120, height: 780 },
+    position: { width: 1320, height: 800 },
     window: { icon: "fa-solid fa-calendar-days", resizable: true, minimizable: true },
     actions: {
       selectCalendar: CalendarManagerApp.#selectCalendar,
@@ -72,14 +72,18 @@ export class CalendarManagerApp extends HandlebarsApplicationMixin(ApplicationV2
     copy.week = { days: (source.week?.days ?? []).map((day) => ({
       id: day.id,
       label: { value: editableLabel(day.label, day.id) },
-      shortLabel: { value: editableLabel(day.shortLabel ?? day.label, day.id) }
+      shortLabel: { value: editableLabel(day.shortLabel ?? day.label, day.id) },
+      alternateLabel: { value: editableLabel(day.alternateLabel, "") },
+      alternateShortLabel: { value: editableLabel(day.alternateShortLabel ?? day.alternateLabel, "") }
     })) };
     copy.months = (source.months ?? []).map((month) => ({
       id: month.id,
       days: Number(month.days),
       leapDays: Number(month.leapDays ?? 0),
       label: { value: editableLabel(month.label, month.id) },
-      shortLabel: { value: editableLabel(month.shortLabel ?? month.label, month.id) }
+      shortLabel: { value: editableLabel(month.shortLabel ?? month.label, month.id) },
+      alternateLabel: { value: editableLabel(month.alternateLabel, "") },
+      alternateShortLabel: { value: editableLabel(month.alternateShortLabel ?? month.alternateLabel, "") }
     }));
     copy.dateFormats = {
       date: { value: editableLabel(source.dateFormats?.date, game.i18n.localize("CALENDAR_FORGE.Formats.Date")) },
@@ -141,13 +145,17 @@ export class CalendarManagerApp extends HandlebarsApplicationMixin(ApplicationV2
       this.draft.week = { days: [...root.querySelectorAll("[data-weekday-row]")].map((row) => ({
         id: slugifyId(row.querySelector('[data-field="id"]')?.value, "day"),
         label: { value: row.querySelector('[data-field="label"]')?.value ?? "" },
-        shortLabel: { value: row.querySelector('[data-field="shortLabel"]')?.value ?? "" }
+        shortLabel: { value: row.querySelector('[data-field="shortLabel"]')?.value ?? "" },
+        alternateLabel: { value: row.querySelector('[data-field="alternateLabel"]')?.value ?? "" },
+        alternateShortLabel: { value: row.querySelector('[data-field="alternateShortLabel"]')?.value ?? "" }
       })) };
 
       this.draft.months = [...root.querySelectorAll("[data-month-row]")].map((row) => ({
         id: slugifyId(row.querySelector('[data-field="id"]')?.value, "month"),
         label: { value: row.querySelector('[data-field="label"]')?.value ?? "" },
         shortLabel: { value: row.querySelector('[data-field="shortLabel"]')?.value ?? "" },
+        alternateLabel: { value: row.querySelector('[data-field="alternateLabel"]')?.value ?? "" },
+        alternateShortLabel: { value: row.querySelector('[data-field="alternateShortLabel"]')?.value ?? "" },
         days: Number(row.querySelector('[data-field="days"]')?.value ?? 30),
         leapDays: Number(row.querySelector('[data-field="leapDays"]')?.value ?? 0)
       }));
@@ -187,8 +195,20 @@ export class CalendarManagerApp extends HandlebarsApplicationMixin(ApplicationV2
       label: { value: editableLabel(this.draft.label, this.draft.id) },
       description: { value: editableLabel(this.draft.description, "") },
       era: { value: editableLabel(this.draft.era, "") },
-      week: { days: (this.draft.week?.days ?? []).map((day) => ({ ...day, label: { value: editableLabel(day.label, day.id) }, shortLabel: { value: editableLabel(day.shortLabel ?? day.label, day.id) } })) },
-      months: (this.draft.months ?? []).map((month) => ({ ...month, label: { value: editableLabel(month.label, month.id) }, shortLabel: { value: editableLabel(month.shortLabel ?? month.label, month.id) } })),
+      week: { days: (this.draft.week?.days ?? []).map((day) => ({
+        ...day,
+        label: { value: editableLabel(day.label, day.id) },
+        shortLabel: { value: editableLabel(day.shortLabel ?? day.label, day.id) },
+        alternateLabel: { value: editableLabel(day.alternateLabel, "") },
+        alternateShortLabel: { value: editableLabel(day.alternateShortLabel ?? day.alternateLabel, "") }
+      })) },
+      months: (this.draft.months ?? []).map((month) => ({
+        ...month,
+        label: { value: editableLabel(month.label, month.id) },
+        shortLabel: { value: editableLabel(month.shortLabel ?? month.label, month.id) },
+        alternateLabel: { value: editableLabel(month.alternateLabel, "") },
+        alternateShortLabel: { value: editableLabel(month.alternateShortLabel ?? month.alternateLabel, "") }
+      })),
       dateFormats: {
         date: { value: editableLabel(this.draft.dateFormats?.date, game.i18n.localize("CALENDAR_FORGE.Formats.Date")) },
         dateTime: { value: editableLabel(this.draft.dateFormats?.dateTime, game.i18n.localize("CALENDAR_FORGE.Formats.DateTime")) }
@@ -303,7 +323,7 @@ export class CalendarManagerApp extends HandlebarsApplicationMixin(ApplicationV2
 
   static async #addMonth() {
     this.#capture();
-    this.draft.months.push({ id: `month-${this.draft.months.length + 1}`, label: { value: game.i18n.localize("CALENDAR_FORGE.CalendarManager.NewMonth") }, shortLabel: { value: "" }, days: 30, leapDays: 0 });
+    this.draft.months.push({ id: `month-${this.draft.months.length + 1}`, label: { value: game.i18n.localize("CALENDAR_FORGE.CalendarManager.NewMonth") }, shortLabel: { value: "" }, alternateLabel: { value: "" }, alternateShortLabel: { value: "" }, days: 30, leapDays: 0 });
     this.render({ force: true });
   }
 
@@ -317,7 +337,7 @@ export class CalendarManagerApp extends HandlebarsApplicationMixin(ApplicationV2
 
   static async #addWeekday() {
     this.#capture();
-    this.draft.week.days.push({ id: `day-${this.draft.week.days.length + 1}`, label: { value: game.i18n.localize("CALENDAR_FORGE.CalendarManager.NewWeekday") }, shortLabel: { value: "" } });
+    this.draft.week.days.push({ id: `day-${this.draft.week.days.length + 1}`, label: { value: game.i18n.localize("CALENDAR_FORGE.CalendarManager.NewWeekday") }, shortLabel: { value: "" }, alternateLabel: { value: "" }, alternateShortLabel: { value: "" } });
     this.render({ force: true });
   }
 

@@ -58,12 +58,14 @@
             {{#if editable}}<button type="button" data-action="addWeekday"><i class="fa-solid fa-plus"></i> {{localize "CALENDAR_FORGE.CalendarManager.AddWeekday"}}</button>{{/if}}
           </div>
           <div class="cf-row-table cf-weekday-table">
-            <div class="cf-row-table-head"><span>{{localize "CALENDAR_FORGE.Fields.Id"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Name"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Short"}}</span><span></span></div>
+            <div class="cf-row-table-head"><span>{{localize "CALENDAR_FORGE.Fields.Id"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Name"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Short"}}</span><span>{{localize "CALENDAR_FORGE.Fields.AlternateName"}}</span><span>{{localize "CALENDAR_FORGE.Fields.AlternateShort"}}</span><span></span></div>
             {{#each definition.week.days as |day index|}}
               <div class="cf-row-table-row" data-weekday-row data-index="{{index}}">
                 <input data-field="id" value="{{day.id}}" {{#unless ../editable}}disabled{{/unless}}>
                 <input data-field="label" value="{{day.label.value}}" {{#unless ../editable}}disabled{{/unless}}>
                 <input data-field="shortLabel" value="{{day.shortLabel.value}}" {{#unless ../editable}}disabled{{/unless}}>
+                <input data-field="alternateLabel" value="{{day.alternateLabel.value}}" placeholder="{{localize 'CALENDAR_FORGE.Fields.AlternateExample'}}" {{#unless ../editable}}disabled{{/unless}}>
+                <input data-field="alternateShortLabel" value="{{day.alternateShortLabel.value}}" {{#unless ../editable}}disabled{{/unless}}>
                 {{#if ../editable}}<button type="button" data-action="removeWeekday" data-index="{{index}}"><i class="fa-solid fa-minus"></i></button>{{/if}}
               </div>
             {{/each}}
@@ -76,12 +78,14 @@
             {{#if editable}}<button type="button" data-action="addMonth"><i class="fa-solid fa-plus"></i> {{localize "CALENDAR_FORGE.CalendarManager.AddMonth"}}</button>{{/if}}
           </div>
           <div class="cf-row-table cf-month-table">
-            <div class="cf-row-table-head"><span>{{localize "CALENDAR_FORGE.Fields.Id"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Name"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Short"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Days"}}</span><span>{{localize "CALENDAR_FORGE.Fields.LeapDays"}}</span><span></span></div>
+            <div class="cf-row-table-head"><span>{{localize "CALENDAR_FORGE.Fields.Id"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Name"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Short"}}</span><span>{{localize "CALENDAR_FORGE.Fields.AlternateName"}}</span><span>{{localize "CALENDAR_FORGE.Fields.AlternateShort"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Days"}}</span><span>{{localize "CALENDAR_FORGE.Fields.LeapDays"}}</span><span></span></div>
             {{#each definition.months as |month index|}}
               <div class="cf-row-table-row" data-month-row data-index="{{index}}">
                 <input data-field="id" value="{{month.id}}" {{#unless ../editable}}disabled{{/unless}}>
                 <input data-field="label" value="{{month.label.value}}" {{#unless ../editable}}disabled{{/unless}}>
                 <input data-field="shortLabel" value="{{month.shortLabel.value}}" {{#unless ../editable}}disabled{{/unless}}>
+                <input data-field="alternateLabel" value="{{month.alternateLabel.value}}" placeholder="{{localize 'CALENDAR_FORGE.Fields.AlternateExample'}}" {{#unless ../editable}}disabled{{/unless}}>
+                <input data-field="alternateShortLabel" value="{{month.alternateShortLabel.value}}" {{#unless ../editable}}disabled{{/unless}}>
                 <input type="number" min="1" data-field="days" value="{{month.days}}" {{#unless ../editable}}disabled{{/unless}}>
                 <input type="number" min="0" data-field="leapDays" value="{{month.leapDays}}" {{#unless ../editable}}disabled{{/unless}}>
                 {{#if ../editable}}<button type="button" data-action="removeMonth" data-index="{{index}}"><i class="fa-solid fa-minus"></i></button>{{/if}}

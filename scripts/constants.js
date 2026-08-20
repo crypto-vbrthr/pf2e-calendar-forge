@@ -15,5 +15,6 @@ export const SETTINGS = Object.freeze({
   ANCHOR_SECOND: "anchorSecond",
   ANCHOR_WEEKDAY: "anchorWeekday",
   ACTIVE_SEASON_PROFILE: "activeSeasonProfile",
-  ACTIVE_MOON_PROFILES: "activeMoonProfiles"
+  ACTIVE_MOON_PROFILES: "activeMoonProfiles",
+  SHOW_ALTERNATE_NAMES: "showAlternateNames"
 });

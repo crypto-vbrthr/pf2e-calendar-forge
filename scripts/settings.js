@@ -77,6 +77,12 @@ export function registerSettings() {
     hint: "CALENDAR_FORGE.Settings.MoonProfiles.Hint",
     scope: "world", config: true, type: String, default: "earth-luna"
   });
+  register(SETTINGS.SHOW_ALTERNATE_NAMES, {
+    name: "CALENDAR_FORGE.Settings.ShowAlternateNames.Name",
+    hint: "CALENDAR_FORGE.Settings.ShowAlternateNames.Hint",
+    scope: "client", config: true, type: Boolean, default: false,
+    onChange: () => Hooks.callAll("calendarForgeDisplaySettingsChanged")
+  });
 }
 
 export const SettingsAdapter = {
@@ -104,6 +110,12 @@ export const SettingsAdapter = {
   },
   async setActiveMoonProfileIds(ids) {
     return game.settings.set(MODULE_ID, SETTINGS.ACTIVE_MOON_PROFILES, [...(ids ?? [])].join(","));
+  },
+  showAlternateNames() {
+    return Boolean(game.settings.get(MODULE_ID, SETTINGS.SHOW_ALTERNATE_NAMES));
+  },
+  async setShowAlternateNames(value) {
+    return game.settings.set(MODULE_ID, SETTINGS.SHOW_ALTERNATE_NAMES, Boolean(value));
   },
   legacyAnchor(calendar) {
     const preferredMonth = game.settings.get(MODULE_ID, SETTINGS.ANCHOR_MONTH);

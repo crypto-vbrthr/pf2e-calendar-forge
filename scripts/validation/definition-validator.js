@@ -36,6 +36,8 @@ export function validateCalendarDefinition(definition) {
     if (month.leapDays != null) assert(Number.isInteger(Number(month.leapDays)) && Number(month.leapDays) >= 0, `calendar.months[${index}].leapDays must be non-negative`);
     assertLabel(month.label, `calendar.months[${index}].label`);
     assertLabel(month.shortLabel, `calendar.months[${index}].shortLabel`);
+    assertLabel(month.alternateLabel, `calendar.months[${index}].alternateLabel`);
+    assertLabel(month.alternateShortLabel, `calendar.months[${index}].alternateShortLabel`);
   });
 
   const weekdays = definition.week?.days ?? [];
@@ -47,6 +49,8 @@ export function validateCalendarDefinition(definition) {
     weekdayIds.add(weekday.id);
     assertLabel(weekday.label, `calendar.week.days[${index}].label`);
     assertLabel(weekday.shortLabel, `calendar.week.days[${index}].shortLabel`);
+    assertLabel(weekday.alternateLabel, `calendar.week.days[${index}].alternateLabel`);
+    assertLabel(weekday.alternateShortLabel, `calendar.week.days[${index}].alternateShortLabel`);
   });
 
   const leap = definition.leapYear ?? { type: "none" };

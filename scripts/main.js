@@ -60,6 +60,7 @@ function registerBuiltins() {
 
 function openCalendar(options = {}) {
   if (!app) app = new CalendarForgeApp(services, options);
+  else app.navigate(options);
   app.render({ force: true });
   return app;
 }
@@ -104,6 +105,10 @@ function openChronicle(options = {}) {
       chronicle.isNew = false;
     }
     if (Object.prototype.hasOwnProperty.call(options, "regionId")) chronicle.regionSelection = options.regionId === null ? "__world__" : (options.regionId ?? "__default__");
+    if (options.fromYear != null) chronicle.fromYear = Number(options.fromYear);
+    if (options.toYear != null) chronicle.toYear = Number(options.toYear);
+    if (options.query != null) chronicle.query = String(options.query);
+    if (options.eventType != null) chronicle.eventType = String(options.eventType);
   }
   chronicle.render({ force: true });
   return chronicle;
@@ -178,6 +183,7 @@ Hooks.once("init", () => {
     worldData,
     providers,
     registries,
+    openCalendar,
     openCalendarManager,
     openRegionManager,
     openTemporalProfiles,
@@ -216,6 +222,11 @@ Hooks.once("ready", async () => {
 
 Hooks.on("calendarForgeDefinitionsChanged", () => {
   void recomputeContext("definitions");
+});
+
+Hooks.on("calendarForgeDisplaySettingsChanged", () => {
+  if (app?.rendered) app.render({ force: true });
+  if (chronicle?.rendered) chronicle.render({ force: true });
 });
 
 Hooks.on("updateWorldTime", async (worldTime, delta, options, userId) => {

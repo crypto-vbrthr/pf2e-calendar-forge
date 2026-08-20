@@ -10,7 +10,18 @@
       "ManageRegions": "Manage regional time contexts",
       "ManageTemporalProfiles": "Manage seasons, moons, and astronomy",
       "OpenChronicle": "Open chronicle, holidays, and historical events",
-      "ManageProviders": "Content providers"
+      "ManageProviders": "Content providers",
+      "PreviousYear": "Previous year",
+      "NextYear": "Next year",
+      "MonthView": "Month view",
+      "YearView": "Year view",
+      "JumpToDate": "Go to date",
+      "ToggleAlternateNames": "Show/hide alternate names",
+      "AlternateNamesShort": "Alt. names",
+      "ShowAlternateNames": "Show alternate names",
+      "HideAlternateNames": "Hide alternate names",
+      "DisplayTools": "Display",
+      "ManagementTools": "Management"
     },
     "Sections": {
       "Events": "Events",
@@ -27,7 +38,8 @@
       "ConfirmDeleteRegion": "Really delete this regional time context?",
       "DeleteFailed": "Could not delete:",
       "NoAstronomy": "No astronomical events on this day.",
-      "ConfirmDeleteTemporalDefinition": "Really delete this custom definition?"
+      "ConfirmDeleteTemporalDefinition": "Really delete this custom definition?",
+      "InvalidDate": "The selected date is invalid."
     },
     "Calendars": {
       "Gregorian": "Earth Calendar",
@@ -148,6 +160,10 @@
       "DefaultRegion": {
         "Name": "Default Region",
         "Hint": "Managed through the Calendar Forge interface."
+      },
+      "ShowAlternateNames": {
+        "Name": "Show alternate month and weekday names",
+        "Hint": "When a calendar provides them, display alternate names alongside its primary month and weekday names. This is a per-user display preference."
       }
     },
     "RegionSelector": {
@@ -194,7 +210,10 @@
       "Visibility": "Visibility",
       "Region": "Region",
       "DurationSeconds": "Duration in seconds",
-      "YearOptional": "Year (optional)"
+      "YearOptional": "Year (optional)",
+      "AlternateName": "Alternate name",
+      "AlternateShort": "Alt. short",
+      "AlternateExample": "e.g. Earth equivalent"
     },
     "CalendarManager": {
       "Title": "Calendar Forge – Calendar Definitions",
@@ -216,7 +235,7 @@
       "LeapRules": "Leap rules",
       "Formats": "Date formats",
       "Anchor": "Time anchor",
-      "FormatHelp": "Available placeholders: {weekday}, {weekdayShort}, {day}, {month}, {monthShort}, {year}, {era}, {hour}, {minute}, {second}.",
+      "FormatHelp": "Available placeholders: {weekday}, {weekdayShort}, {weekdayAlternate}, {weekdayAlternateShort}, {day}, {month}, {monthShort}, {monthAlternate}, {monthAlternateShort}, {year}, {era}, {hour}, {minute}, {second}.",
       "AnchorHelp": "This anchor maps one Foundry worldTime value to one date in this calendar. Calendar Forge still does not maintain a second running clock.",
       "NoCalendars": "No calendar is registered.",
       "NewMonth": "New Month",
@@ -388,7 +407,12 @@
       "DocumentNotFound": "The linked Foundry document could not be opened.",
       "DurationDays": "{days} days",
       "FestivalDay": "Day {day} of {duration}",
-      "HourSuffix": "h"
+      "HourSuffix": "h",
+      "CurrentYear": "Current year",
+      "ResetFilters": "Reset filters",
+      "Entries": "entries",
+      "ToggleSort": "Reverse sort order",
+      "ShowInCalendar": "Show in calendar"
     },
     "ProviderManager": {
       "Title": "Calendar Forge · Content Providers",
@@ -422,6 +446,14 @@
       "ClockAligned": "Calendar from {id} was synchronized with the system clock.",
       "ClockAlignment": "System clock alignment",
       "ClockAlignmentDescription": "This provider can align its calendar anchor with the game system clock baseline."
+    },
+    "Legend": {
+      "SeasonChange": "Season change",
+      "MoonPhase": "Moon phase",
+      "Astronomy": "Astronomy",
+      "Holiday": "Holiday",
+      "Historical": "History",
+      "Campaign": "Campaign"
     }
   }
 }

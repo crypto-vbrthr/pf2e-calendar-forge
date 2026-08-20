@@ -104,6 +104,23 @@ label: { i18n: "MY_PACK.Months.First.Name" }
 
 Providers can opt into a best-effort localization diagnostic by setting `checkI18n: true`. Missing keys are warnings, not registration failures.
 
+### Optional alternate month and weekday names
+
+Calendar Forge 0.6.0 allows every month and weekday definition to provide a second localized name pair:
+
+```js
+{
+  id: "setting-month",
+  label: { i18n: "MY_PACK.Month.Setting" },
+  shortLabel: { i18n: "MY_PACK.Month.SettingShort" },
+  alternateLabel: { i18n: "CALENDAR_FORGE.Months.September" },
+  alternateShortLabel: { i18n: "CALENDAR_FORGE.Months.SeptemberShort" },
+  days: 30
+}
+```
+
+`alternateLabel` and `alternateShortLabel` are generic aliases. They can represent an Earth-calendar equivalent, a second cultural name, or any other useful correspondence. They are optional and do not affect calendar arithmetic. Each user controls whether they are shown in Calendar Forge; integrations can always inspect both forms through `getTemporalContext().calendar.names`.
+
 ## Diagnostics and inspection
 
 ```js

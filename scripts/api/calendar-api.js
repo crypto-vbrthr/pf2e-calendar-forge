@@ -74,7 +74,7 @@ export function createCalendarApi({ temporal, providers, registries, events, wor
       });
       return entries.map((entry) => ({
         ...entry,
-        formattedDate: formatPartialCalendarDate(entry.date, entry.precision ?? "day", resolved.calendar)
+        formattedDate: formatPartialCalendarDate(entry.date, entry.precision ?? "day", resolved.calendar, { includeAlternate: Boolean(options.includeAlternateNames) })
       }));
     },
 
@@ -122,6 +122,11 @@ export function createCalendarApi({ temporal, providers, registries, events, wor
     },
 
     providers,
+
+    display: Object.freeze({
+      showAlternateNames: () => settings.showAlternateNames(),
+      setShowAlternateNames: (value) => settings.setShowAlternateNames(value)
+    }),
 
     calendars: Object.freeze({
       get: (id) => registries.calendars.get(id),
