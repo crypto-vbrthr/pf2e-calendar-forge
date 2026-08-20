@@ -1,0 +1,105 @@
+{
+  "CALENDAR_FORGE": {
+    "Title": "Calendar Forge",
+    "Actions": {
+      "Open": "Open Calendar Forge",
+      "Today": "Today",
+      "PreviousMonth": "Previous month",
+      "NextMonth": "Next month"
+    },
+    "Sections": {
+      "Events": "Events",
+      "Moons": "Moons",
+      "Season": "Season"
+    },
+    "Messages": {
+      "NoEvents": "No special events on this day."
+    },
+    "Calendars": {
+      "Gregorian": "Earth Calendar",
+      "GregorianDescription": "Gregorian calendar with localized month and weekday names."
+    },
+    "Eras": { "CE": "CE" },
+    "Formats": {
+      "Date": "{weekday}, {month} {day}, {year} {era}",
+      "DateTime": "{weekday}, {month} {day}, {year} {era}, {hour}:{minute}"
+    },
+    "Months": {
+      "January": "January", "JanuaryShort": "Jan",
+      "February": "February", "FebruaryShort": "Feb",
+      "March": "March", "MarchShort": "Mar",
+      "April": "April", "AprilShort": "Apr",
+      "May": "May", "MayShort": "May",
+      "June": "June", "JuneShort": "Jun",
+      "July": "July", "JulyShort": "Jul",
+      "August": "August", "AugustShort": "Aug",
+      "September": "September", "SeptemberShort": "Sep",
+      "October": "October", "OctoberShort": "Oct",
+      "November": "November", "NovemberShort": "Nov",
+      "December": "December", "DecemberShort": "Dec"
+    },
+    "Weekdays": {
+      "Monday": "Monday", "MondayShort": "Mon",
+      "Tuesday": "Tuesday", "TuesdayShort": "Tue",
+      "Wednesday": "Wednesday", "WednesdayShort": "Wed",
+      "Thursday": "Thursday", "ThursdayShort": "Thu",
+      "Friday": "Friday", "FridayShort": "Fri",
+      "Saturday": "Saturday", "SaturdayShort": "Sat",
+      "Sunday": "Sunday", "SundayShort": "Sun"
+    },
+    "Seasons": {
+      "Spring": "Spring",
+      "Summer": "Summer",
+      "Autumn": "Autumn",
+      "Winter": "Winter"
+    },
+    "SeasonProfiles": {
+      "NorthernTemperate": "Northern Temperate"
+    },
+    "Moons": { "Moon": "Moon" },
+    "MoonPhases": {
+      "New": "New Moon",
+      "WaxingCrescent": "Waxing Crescent",
+      "FirstQuarter": "First Quarter",
+      "WaxingGibbous": "Waxing Gibbous",
+      "Full": "Full Moon",
+      "WaningGibbous": "Waning Gibbous",
+      "LastQuarter": "Last Quarter",
+      "WaningCrescent": "Waning Crescent"
+    },
+    "Settings": {
+      "ActiveCalendar": {
+        "Name": "Active Calendar",
+        "Hint": "ID of the active calendar provider. External modules can register additional calendars."
+      },
+      "AnchorWorldTime": {
+        "Name": "Anchor: Foundry World Time",
+        "Hint": "Foundry worldTime in seconds corresponding to the configured anchor date."
+      },
+      "AnchorYear": {
+        "Name": "Anchor: Year",
+        "Hint": "Calendar year at the anchor point."
+      },
+      "AnchorMonth": {
+        "Name": "Anchor: Month ID",
+        "Hint": "Stable month ID of the active calendar, such as january or an ID supplied by a content module."
+      },
+      "AnchorDay": { "Name": "Anchor: Day" },
+      "AnchorHour": { "Name": "Anchor: Hour" },
+      "AnchorMinute": { "Name": "Anchor: Minute" },
+      "AnchorSecond": { "Name": "Anchor: Second" },
+      "AnchorWeekday": {
+        "Name": "Anchor: Weekday Index",
+        "Hint": "Zero-based weekday index at the anchor date. In the standard calendar, 0 is Monday."
+      },
+      "SeasonProfile": {
+        "Name": "Active Season Profile",
+        "Hint": "Season profile ID used by the default temporal context."
+      },
+      "MoonProfiles": {
+        "Name": "Active Moon Profiles",
+        "Hint": "Comma-separated IDs of active moon profiles."
+      }
+    }
+  }
+}

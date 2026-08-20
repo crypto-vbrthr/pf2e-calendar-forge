@@ -1,0 +1,249 @@
+.calendar-forge-app {
+  --cf-bg: rgba(24, 27, 31, 0.98);
+  --cf-panel: rgba(39, 43, 49, 0.96);
+  --cf-panel-soft: rgba(48, 53, 60, 0.78);
+  --cf-border: rgba(205, 184, 132, 0.22);
+  --cf-accent: #c8ad72;
+  --cf-text: #e9e5da;
+  --cf-muted: #a9adb3;
+  --cf-blue: #83aebb;
+  min-width: 840px;
+  min-height: 600px;
+}
+
+.calendar-forge-app .window-content {
+  padding: 0;
+  background: var(--cf-bg);
+  color: var(--cf-text);
+}
+
+.cf-shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+  min-height: 0;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(200, 173, 114, 0.06), transparent 28%),
+    var(--cf-bg);
+}
+
+.cf-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--cf-border);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.cf-eyebrow {
+  color: var(--cf-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.cf-current-date {
+  margin-top: 0.14rem;
+  font-size: 1.35rem;
+  font-weight: 650;
+}
+
+.cf-current-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 0.35rem;
+  color: var(--cf-muted);
+  font-size: 0.8rem;
+}
+
+.cf-current-meta i { color: var(--cf-blue); margin-right: 0.22rem; }
+
+.cf-nav { display: flex; align-items: center; gap: 0.35rem; }
+.cf-nav button,
+.cf-time-controls button {
+  border: 1px solid var(--cf-border);
+  background: var(--cf-panel-soft);
+  color: var(--cf-text);
+  min-height: 2rem;
+}
+.cf-nav button:hover,
+.cf-time-controls button:hover { border-color: var(--cf-accent); color: var(--cf-accent); }
+.cf-nav .cf-today { padding-inline: 0.85rem; }
+
+.cf-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 1rem;
+  min-height: 0;
+  padding: 1rem;
+}
+
+.cf-calendar-panel,
+.cf-inspector {
+  min-height: 0;
+  border: 1px solid var(--cf-border);
+  border-radius: 8px;
+  background: var(--cf-panel);
+}
+
+.cf-calendar-panel {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  overflow: hidden;
+}
+
+.cf-month-title {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.55rem;
+  padding: 0.9rem;
+  border-bottom: 1px solid var(--cf-border);
+  font-size: 1.35rem;
+}
+.cf-month-title strong { color: var(--cf-accent); font-weight: 650; }
+
+.cf-weekdays,
+.cf-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cf-weekdays {
+  border-bottom: 1px solid var(--cf-border);
+  background: rgba(0, 0, 0, 0.10);
+}
+.cf-weekdays > div {
+  padding: 0.48rem 0.35rem;
+  color: var(--cf-muted);
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cf-month-grid {
+  grid-auto-rows: minmax(74px, 1fr);
+  min-height: 0;
+  overflow: auto;
+}
+
+.cf-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0.55rem;
+  border: 0;
+  border-right: 1px solid rgba(255,255,255,0.055);
+  border-bottom: 1px solid rgba(255,255,255,0.055);
+  border-radius: 0;
+  background: transparent;
+  color: var(--cf-text);
+  text-align: left;
+}
+
+button.cf-day { cursor: pointer; }
+button.cf-day:hover { background: rgba(200, 173, 114, 0.065); }
+.cf-day.is-today { box-shadow: inset 0 0 0 1px var(--cf-accent); }
+.cf-day.is-selected { background: rgba(200, 173, 114, 0.105); }
+.cf-day-number { font-size: 1rem; font-weight: 650; }
+.cf-day.is-today .cf-day-number { color: var(--cf-accent); }
+.cf-empty { opacity: 0.25; }
+
+.cf-markers {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  min-height: 1.2rem;
+  color: var(--cf-blue);
+}
+.cf-marker-season-change { color: var(--cf-accent); }
+.cf-marker-holiday { color: #d5bd81; }
+.cf-marker-historical { color: #b4a891; }
+.cf-more { color: var(--cf-muted); font-size: 0.72rem; }
+
+.cf-inspector {
+  overflow: auto;
+  padding: 1rem;
+}
+.cf-inspector-date { font-size: 1.1rem; font-weight: 650; }
+.cf-inspector-subtitle { margin-top: 0.2rem; color: var(--cf-muted); font-size: 0.8rem; }
+
+.cf-card {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 7px;
+  background: rgba(0,0,0,0.11);
+}
+.cf-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  margin: 0 0 0.7rem;
+  color: var(--cf-accent);
+  font-size: 0.83rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.cf-card-row,
+.cf-moon-row,
+.cf-event {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.cf-card-row { justify-content: space-between; }
+.cf-moon-row + .cf-moon-row,
+.cf-event + .cf-event { margin-top: 0.55rem; }
+.cf-moon-row > i,
+.cf-event > i { width: 1rem; color: var(--cf-blue); text-align: center; }
+.cf-moon-row > div { display: flex; flex: 1; flex-direction: column; }
+.cf-moon-row small { color: var(--cf-muted); }
+.cf-progress { height: 4px; margin-top: 0.55rem; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,0.08); }
+.cf-progress span { display: block; height: 100%; background: var(--cf-accent); }
+.cf-muted { color: var(--cf-muted); font-size: 0.82rem; }
+
+.cf-time-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--cf-border);
+  background: rgba(0,0,0,0.12);
+}
+.cf-world-time {
+  min-width: 260px;
+  padding-inline: 0.8rem;
+  color: var(--cf-muted);
+  text-align: center;
+}
+
+.calendar-forge-region-launcher {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.2rem 0.35rem;
+}
+.calendar-forge-region-launcher > button {
+  width: 2rem;
+  min-width: 2rem;
+  height: 2rem;
+  border: 1px solid rgba(200, 173, 114, 0.3);
+  background: rgba(36, 40, 46, 0.92);
+  color: #c8ad72;
+}
+
+@media (max-width: 940px) {
+  .cf-main { grid-template-columns: 1fr; }
+  .cf-inspector { max-height: 260px; }
+}

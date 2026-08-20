@@ -1,0 +1,118 @@
+<div class="cf-shell">
+  <header class="cf-topbar">
+    <div class="cf-current">
+      <div class="cf-eyebrow">{{calendarLabel}}</div>
+      <div class="cf-current-date">{{current.formatted.date}}</div>
+      <div class="cf-current-meta">
+        <span><i class="fa-solid fa-clock"></i> {{current.formatted.time}}</span>
+        {{#if current.season}}
+          <span><i class="fa-solid {{current.season.icon}}"></i> {{current.season.label}}</span>
+        {{/if}}
+        {{#each current.moons as |moon|}}
+          <span><i class="fa-solid {{moon.icon}}"></i> {{moon.phaseLabel}}</span>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="cf-nav">
+      <button type="button" data-action="previousMonth" data-tooltip="{{labels.previousMonth}}"><i class="fa-solid fa-chevron-left"></i></button>
+      <button type="button" class="cf-today" data-action="today">{{labels.today}}</button>
+      <button type="button" data-action="nextMonth" data-tooltip="{{labels.nextMonth}}"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </header>
+
+  <main class="cf-main">
+    <section class="cf-calendar-panel">
+      <div class="cf-month-title">
+        <span>{{monthLabel}}</span>
+        <strong>{{viewYear}}</strong>
+      </div>
+
+      <div class="cf-weekdays">
+        {{#each weekdays as |weekday|}}
+          <div>{{weekday.label}}</div>
+        {{/each}}
+      </div>
+
+      <div class="cf-month-grid">
+        {{#each cells as |cell|}}
+          {{#if cell.empty}}
+            <div class="cf-day cf-empty" data-key="{{cell.key}}"></div>
+          {{else}}
+            <button type="button"
+                    class="cf-day {{#if cell.isToday}}is-today{{/if}} {{#if cell.isSelected}}is-selected{{/if}}"
+                    data-action="selectDay"
+                    data-world-time="{{cell.worldTime}}"
+                    data-tooltip="{{cell.markerTitle}}">
+              <span class="cf-day-number">{{cell.day}}</span>
+              <span class="cf-markers">
+                {{#each cell.markers as |marker|}}
+                  <i class="fa-solid {{marker.icon}} cf-marker cf-marker-{{marker.type}}"></i>
+                {{/each}}
+                {{#if cell.extraMarkers}}<span class="cf-more">+{{cell.extraMarkers}}</span>{{/if}}
+              </span>
+            </button>
+          {{/if}}
+        {{/each}}
+      </div>
+    </section>
+
+    <aside class="cf-inspector">
+      <div class="cf-inspector-date">{{selected.formattedDate}}</div>
+      <div class="cf-inspector-subtitle">{{selected.weekday}} · {{selected.formattedTime}}</div>
+
+      {{#if selected.season}}
+        <section class="cf-card">
+          <h3><i class="fa-solid {{selected.season.icon}}"></i> {{labels.season}}</h3>
+          <div class="cf-card-row">
+            <span>{{selected.season.label}}</span>
+            <span>{{numberFormat selected.season.progress style="percent" maximumFractionDigits=0}}</span>
+          </div>
+          <div class="cf-progress"><span style="width: {{numberFormat selected.season.progress style='percent' maximumFractionDigits=0}}"></span></div>
+        </section>
+      {{/if}}
+
+      <section class="cf-card">
+        <h3><i class="fa-solid fa-moon"></i> {{labels.moons}}</h3>
+        {{#each selected.moons as |moon|}}
+          <div class="cf-moon-row">
+            <i class="fa-solid {{moon.icon}}"></i>
+            <div>
+              <strong>{{moon.label}}</strong>
+              <small>{{moon.phaseLabel}}</small>
+            </div>
+            <span>{{numberFormat moon.illumination style="percent" maximumFractionDigits=0}}</span>
+          </div>
+        {{/each}}
+      </section>
+
+      <section class="cf-card cf-events-card">
+        <h3><i class="fa-solid fa-star"></i> {{labels.events}}</h3>
+        {{#if selected.seasonChange}}
+          <div class="cf-event">
+            <i class="fa-solid {{selected.seasonChange.icon}}"></i>
+            <span>{{selected.seasonChange.label}}</span>
+          </div>
+        {{/if}}
+        {{#each selected.events as |event|}}
+          <div class="cf-event">
+            <i class="fa-solid {{event.icon}}"></i>
+            <span>{{event.label}}</span>
+          </div>
+        {{else}}
+          {{#unless selected.seasonChange}}<div class="cf-muted">{{labels.noEvents}}</div>{{/unless}}
+        {{/each}}
+      </section>
+    </aside>
+  </main>
+
+  {{#if isGM}}
+    <footer class="cf-time-controls">
+      <button type="button" data-action="rewindDay"><i class="fa-solid fa-backward-step"></i> 1d</button>
+      <button type="button" data-action="rewindHour"><i class="fa-solid fa-minus"></i> 1h</button>
+      <span class="cf-world-time"><i class="fa-solid fa-hourglass-half"></i> {{current.formatted.dateTime}}</span>
+      <button type="button" data-action="advanceHour">1h <i class="fa-solid fa-plus"></i></button>
+      <button type="button" data-action="advanceDay">1d <i class="fa-solid fa-forward-step"></i></button>
+    </footer>
+  {{/if}}
+</div>

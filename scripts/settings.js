@@ -1,0 +1,97 @@
+import { MODULE_ID, SETTINGS } from "./constants.js";
+import { CalendarEngine } from "./calendar/calendar-engine.js";
+
+function register(name, data) {
+  game.settings.register(MODULE_ID, name, data);
+}
+
+export function registerSettings() {
+  register(SETTINGS.ACTIVE_CALENDAR, {
+    name: "CALENDAR_FORGE.Settings.ActiveCalendar.Name",
+    hint: "CALENDAR_FORGE.Settings.ActiveCalendar.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    default: "earth-gregorian"
+  });
+  register(SETTINGS.ANCHOR_WORLD_TIME, {
+    name: "CALENDAR_FORGE.Settings.AnchorWorldTime.Name",
+    hint: "CALENDAR_FORGE.Settings.AnchorWorldTime.Hint",
+    scope: "world", config: true, type: Number, default: 0
+  });
+  register(SETTINGS.ANCHOR_YEAR, {
+    name: "CALENDAR_FORGE.Settings.AnchorYear.Name",
+    hint: "CALENDAR_FORGE.Settings.AnchorYear.Hint",
+    scope: "world", config: true, type: Number, default: 2026
+  });
+  register(SETTINGS.ANCHOR_MONTH, {
+    name: "CALENDAR_FORGE.Settings.AnchorMonth.Name",
+    hint: "CALENDAR_FORGE.Settings.AnchorMonth.Hint",
+    scope: "world", config: true, type: String, default: "january"
+  });
+  register(SETTINGS.ANCHOR_DAY, {
+    name: "CALENDAR_FORGE.Settings.AnchorDay.Name",
+    scope: "world", config: true, type: Number, default: 1
+  });
+  register(SETTINGS.ANCHOR_HOUR, {
+    name: "CALENDAR_FORGE.Settings.AnchorHour.Name",
+    scope: "world", config: true, type: Number, default: 0
+  });
+  register(SETTINGS.ANCHOR_MINUTE, {
+    name: "CALENDAR_FORGE.Settings.AnchorMinute.Name",
+    scope: "world", config: true, type: Number, default: 0
+  });
+  register(SETTINGS.ANCHOR_SECOND, {
+    name: "CALENDAR_FORGE.Settings.AnchorSecond.Name",
+    scope: "world", config: false, type: Number, default: 0
+  });
+  register(SETTINGS.ANCHOR_WEEKDAY, {
+    name: "CALENDAR_FORGE.Settings.AnchorWeekday.Name",
+    hint: "CALENDAR_FORGE.Settings.AnchorWeekday.Hint",
+    scope: "world", config: true, type: Number, default: 3
+  });
+  register(SETTINGS.ACTIVE_SEASON_PROFILE, {
+    name: "CALENDAR_FORGE.Settings.SeasonProfile.Name",
+    hint: "CALENDAR_FORGE.Settings.SeasonProfile.Hint",
+    scope: "world", config: true, type: String, default: "earth-northern-temperate"
+  });
+  register(SETTINGS.ACTIVE_MOON_PROFILES, {
+    name: "CALENDAR_FORGE.Settings.MoonProfiles.Name",
+    hint: "CALENDAR_FORGE.Settings.MoonProfiles.Hint",
+    scope: "world", config: true, type: String, default: "earth-luna"
+  });
+}
+
+export const SettingsAdapter = {
+  activeCalendarId() {
+    return game.settings.get(MODULE_ID, SETTINGS.ACTIVE_CALENDAR);
+  },
+  activeSeasonProfileId() {
+    return game.settings.get(MODULE_ID, SETTINGS.ACTIVE_SEASON_PROFILE);
+  },
+  activeMoonProfileIds() {
+    return String(game.settings.get(MODULE_ID, SETTINGS.ACTIVE_MOON_PROFILES) ?? "")
+      .split(",").map((value) => value.trim()).filter(Boolean);
+  },
+  anchor(calendar) {
+    const preferredMonth = game.settings.get(MODULE_ID, SETTINGS.ANCHOR_MONTH);
+    const monthId = calendar.months.some((month) => month.id === preferredMonth)
+      ? preferredMonth
+      : calendar.months[0]?.id;
+    const year = Number(game.settings.get(MODULE_ID, SETTINGS.ANCHOR_YEAR));
+    const monthIndex = calendar.months.findIndex((month) => month.id === monthId);
+    const requestedDay = Number(game.settings.get(MODULE_ID, SETTINGS.ANCHOR_DAY));
+    const maxDay = CalendarEngine.daysInMonth(year, monthIndex, calendar);
+    const day = Math.max(1, Math.min(maxDay, Number.isFinite(requestedDay) ? Math.trunc(requestedDay) : 1));
+    return {
+      worldTime: Number(game.settings.get(MODULE_ID, SETTINGS.ANCHOR_WORLD_TIME)),
+      year,
+      monthId,
+      day,
+      hour: Number(game.settings.get(MODULE_ID, SETTINGS.ANCHOR_HOUR)),
+      minute: Number(game.settings.get(MODULE_ID, SETTINGS.ANCHOR_MINUTE)),
+      second: Number(game.settings.get(MODULE_ID, SETTINGS.ANCHOR_SECOND)),
+      weekdayIndex: Number(game.settings.get(MODULE_ID, SETTINGS.ANCHOR_WEEKDAY))
+    };
+  }
+};
