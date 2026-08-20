@@ -53,7 +53,7 @@ function registerBuiltins() {
     registries.seasons.register(definition);
   }
   for (const definition of BUILTIN_MOON_PROFILES) {
-    validateMoonProfile(definition);
+    validateMoonProfile(definition, registries.calendars.get(definition.calendarId));
     registries.moons.register(definition);
   }
 }
@@ -163,7 +163,8 @@ Hooks.once("init", () => {
     holidayRegistry: registries.holidays,
     historicalRegistry: registries.historical,
     eventService,
-    settings: SettingsAdapter
+    settings: SettingsAdapter,
+    worldData
   });
 
   services = {
@@ -255,7 +256,7 @@ Hooks.on("updateWorldTime", async (worldTime, delta, options, userId) => {
     const end = Math.max(Number(previous.worldTime), Number(current.worldTime));
     if (end > start) {
       const resolved = temporal.resolve();
-      const transitions = services.moons.getTransitionsBetween(start, end, resolved.calendar, resolved.moonProfileIds);
+      const transitions = services.moons.getTransitionsBetween(start, end, resolved.calendar, resolved.moonProfileIds, { anchor: temporal.getAnchor(resolved.calendar) });
       if (transitions.length) Hooks.callAll("calendarForgeMoonTransitionsCrossed", transitions, current, change);
     }
   }

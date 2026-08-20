@@ -10,7 +10,8 @@ export class ProviderManagerApp extends HandlebarsApplicationMixin(ApplicationV2
     position: { width: 980, height: 680 },
     window: { icon: "fa-solid fa-puzzle-piece", resizable: true, minimizable: true },
     actions: {
-      applyDefaults: ProviderManagerApp.#applyDefaults
+      applyDefaults: ProviderManagerApp.#applyDefaults,
+      alignClock: ProviderManagerApp.#alignClock
     }
   };
 
@@ -42,6 +43,7 @@ export class ProviderManagerApp extends HandlebarsApplicationMixin(ApplicationV2
         total,
         capabilities,
         hasDefaults: Object.keys(provider.defaults ?? {}).length > 0,
+        supportsClockAlignment: Boolean(provider.supportsClockAlignment),
         defaultsSummary: [
           provider.defaults?.calendarId ? game.i18n.format("CALENDAR_FORGE.ProviderManager.DefaultCalendar", { id: provider.defaults.calendarId }) : null,
           provider.defaults?.regionId ? game.i18n.format("CALENDAR_FORGE.ProviderManager.DefaultRegion", { id: provider.defaults.regionId }) : null,
@@ -70,6 +72,19 @@ export class ProviderManagerApp extends HandlebarsApplicationMixin(ApplicationV2
       this.render({ force: true });
     } catch (error) {
       console.error("Calendar Forge | Unable to apply provider defaults", error);
+      ui.notifications.error(error.message);
+    }
+  }
+
+  static async #alignClock(_event, target) {
+    const id = target.dataset.providerId;
+    if (!id) return;
+    try {
+      await this.services.providers.alignClock(id, { force: true });
+      ui.notifications.info(game.i18n.format("CALENDAR_FORGE.ProviderManager.ClockAligned", { id }));
+      this.render({ force: true });
+    } catch (error) {
+      console.error("Calendar Forge | Unable to align provider calendar", error);
       ui.notifications.error(error.message);
     }
   }

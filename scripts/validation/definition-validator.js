@@ -121,13 +121,27 @@ export function validateSeasonProfile(definition, calendar = null) {
   return true;
 }
 
-export function validateMoonProfile(definition) {
+export function validateMoonProfile(definition, calendar = null) {
   assert(definition && typeof definition === "object", "Moon profile must be an object");
   assertId(definition.id, "moon.id");
   assertLabel(definition.label, "moon.label");
   assertId(definition.calendarId, "moon.calendarId");
   assert(Number.isFinite(Number(definition.cycleLengthDays)) && Number(definition.cycleLengthDays) > 0, "moon.cycleLengthDays must be positive");
   assert(Number.isFinite(Number(definition.referenceWorldTime ?? 0)), "moon.referenceWorldTime must be numeric");
+  if (definition.referenceDate != null) {
+    assert(definition.referenceDate && typeof definition.referenceDate === "object", "moon.referenceDate must be an object");
+    assert(Number.isInteger(Number(definition.referenceDate.year)), "moon.referenceDate.year must be an integer");
+    assertId(definition.referenceDate.monthId, "moon.referenceDate.monthId");
+    assert(Number.isInteger(Number(definition.referenceDate.day)) && Number(definition.referenceDate.day) > 0, "moon.referenceDate.day must be positive");
+    if (calendar) {
+      const monthIndex = calendar.months.findIndex((month) => month.id === definition.referenceDate.monthId);
+      assert(monthIndex >= 0, `moon.referenceDate.monthId '${definition.referenceDate.monthId}' is unknown`);
+      if (monthIndex >= 0) {
+        const maxDay = Number(calendar.months[monthIndex].days) + Number(calendar.months[monthIndex].leapDays ?? 0);
+        assert(Number(definition.referenceDate.day) <= maxDay, `moon.referenceDate.day is outside month '${definition.referenceDate.monthId}'`);
+      }
+    }
+  }
   const progress = Number(definition.referenceProgress ?? 0);
   assert(Number.isFinite(progress) && progress >= 0 && progress < 1, "moon.referenceProgress must be between 0 and 1");
   assert(Array.isArray(definition.phases) && definition.phases.length > 0, "moon.phases must contain at least one phase");

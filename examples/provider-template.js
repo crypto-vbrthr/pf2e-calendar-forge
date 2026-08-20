@@ -12,6 +12,10 @@ Hooks.once("calendarForgeReady", (api) => {
     compatibility: { api: { min: 5, max: 5 }, schema: { min: 4, max: 4 } },
     checkI18n: true,
 
+    // Optional for system-specific packs. If omitted, the provider remains pure data.
+    // anchorResolver: async ({ calendar, worldTime }) => ({ ... }),
+    // clockAlignment: { calendarId: "example-calendar", source: "example-system-clock" },
+
     calendars: [{
       id: "example-calendar",
       label: { i18n: "EXAMPLE_CALENDAR.Calendar.Name" },

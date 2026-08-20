@@ -416,7 +416,12 @@
         "holidays": "Feiertage",
         "historical": "Historie",
         "events": "Ereignisse"
-      }
+      },
+      "AlignClock": "Mit Systemuhr synchronisieren",
+      "AlignClockHint": "Richtet den Kalenderanker dieses Providers auf den aktuellen Zeitstand der Systemuhr aus. Ein vorhandener Kalenderanker wird ersetzt.",
+      "ClockAligned": "Kalender von {id} wurde mit der Systemuhr synchronisiert.",
+      "ClockAlignment": "Systemuhr-Ausrichtung",
+      "ClockAlignmentDescription": "Dieser Provider kann seinen Kalenderanker an die Zeitbasis des Spielsystems anpassen."
     }
   }
 }

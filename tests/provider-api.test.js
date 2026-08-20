@@ -14,7 +14,7 @@ const calendar = {
 
 globalThis.Hooks = { callAll() {} };
 
-function build({ eventService = null, settings = null } = {}) {
+function build({ eventService = null, settings = null, worldData = null } = {}) {
   const calendars = new DefinitionRegistry("calendar");
   const seasons = new DefinitionRegistry("season");
   const moons = new DefinitionRegistry("moon");
@@ -33,7 +33,7 @@ function build({ eventService = null, settings = null } = {}) {
   };
   return {
     calendars, seasons, moons, regions, astronomy, holidays, historical, events,
-    api: new ProviderApi({ calendarRegistry: calendars, seasonRegistry: seasons, moonRegistry: moons, regionRegistry: regions, astronomyRegistry: astronomy, holidayRegistry: holidays, historicalRegistry: historical, eventService: events, settings })
+    api: new ProviderApi({ calendarRegistry: calendars, seasonRegistry: seasons, moonRegistry: moons, regionRegistry: regions, astronomyRegistry: astronomy, holidayRegistry: holidays, historicalRegistry: historical, eventService: events, settings, worldData })
   };
 }
 
@@ -167,4 +167,35 @@ test("provider defaults can be applied explicitly by a GM", async () => {
   });
   await api.applyDefaults("defaults-provider");
   assert.deepEqual(calls, [["calendar", "defaults-calendar"], ["region", "defaults-region"], ["season", "defaults-seasons"], ["moons", ["defaults-moon"]]]);
+});
+
+
+test("provider clock alignment stores a world-specific anchor and preserves it during normal defaults", async () => {
+  const saved = new Map();
+  const worldData = {
+    getAnchor(id) { return saved.get(id) ?? null; },
+    async saveAnchor(calendar, anchor) { saved.set(calendar.id, structuredClone(anchor)); return structuredClone(anchor); }
+  };
+  const calls = [];
+  const settings = {
+    async setActiveCalendarId(value) { calls.push(["calendar", value]); },
+    async setDefaultRegionId() {}, async setActiveSeasonProfileId() {}, async setActiveMoonProfileIds() {}
+  };
+  globalThis.game = { user: { isGM: true }, time: { worldTime: 123 } };
+  const { api } = build({ settings, worldData });
+  api.register({
+    id: "clock-provider",
+    calendars: [{ ...calendar, id: "clock-calendar" }],
+    defaults: { calendarId: "clock-calendar", alignClock: true },
+    anchorResolver: async () => ({ worldTime: 0, year: 42, monthId: "month", day: 3, hour: 4, minute: 5, second: 6, weekdayIndex: 0 })
+  });
+
+  await api.applyDefaults("clock-provider");
+  assert.equal(saved.get("clock-calendar").year, 42);
+  assert.deepEqual(calls, [["calendar", "clock-calendar"]]);
+
+  const before = structuredClone(saved.get("clock-calendar"));
+  const result = await api.alignClock("clock-provider", { force: false });
+  assert.equal(result.aligned, false);
+  assert.deepEqual(saved.get("clock-calendar"), before);
 });

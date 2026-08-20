@@ -89,9 +89,10 @@ export class TemporalContextService {
     if (!calendar) throw new Error("No Calendar Forge calendar is registered");
 
     const localWorldTime = worldTime + resolved.timeOffsetSeconds;
-    const date = CalendarEngine.fromWorldTime(localWorldTime, calendar, this.getAnchor(calendar));
+    const anchor = this.getAnchor(calendar);
+    const date = CalendarEngine.fromWorldTime(localWorldTime, calendar, anchor);
     const season = this.seasons.getState(date, calendar, resolved.seasonProfileId);
-    const moons = this.moons.getStates(worldTime, calendar, resolved.moonProfileIds);
+    const moons = this.moons.getStates(worldTime, calendar, resolved.moonProfileIds, { anchor });
     const regionId = resolved.region?.id ?? null;
 
     const dayStartWorldTime = this.toWorldTime({
@@ -121,7 +122,7 @@ export class TemporalContextService {
       dayEndWorldTime,
       calendar,
       resolved.moonProfileIds,
-      { markersOnly: true }
+      { markersOnly: true, anchor }
     ) ?? [];
 
     for (const event of astronomicalEvents) {

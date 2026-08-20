@@ -56,3 +56,34 @@ test("moon service returns marked phase transitions across a day", () => {
   assert.equal(transitions[0].phase, "quarter");
   assert.equal(transitions[0].worldTime, 2 * day);
 });
+
+test("moon referenceDate follows the calendar anchor instead of an arbitrary worldTime epoch", () => {
+  const registry = new DefinitionRegistry("moon");
+  const datedCalendar = {
+    id: "moon-calendar",
+    time: { secondsPerMinute: 60, minutesPerHour: 60, hoursPerDay: 24 },
+    week: { days: [{ id: "day" }] },
+    months: [{ id: "m1", days: 30 }, { id: "m2", days: 30 }],
+    leapYear: { type: "none" }
+  };
+  registry.register({
+    id: "dated-moon",
+    calendarId: "moon-calendar",
+    label: { value: "Dated Moon" },
+    cycleLengthDays: 8,
+    referenceDate: { year: 10, monthId: "m1", day: 1 },
+    referenceProgress: 0.25,
+    phases: [
+      { id: "new", start: 0, label: { value: "New" } },
+      { id: "quarter", start: 0.25, label: { value: "Quarter" } },
+      { id: "full", start: 0.5, label: { value: "Full" } }
+    ]
+  });
+  const service = new MoonService(registry);
+  const day = 86400;
+  const anchorA = { worldTime: 0, year: 10, monthId: "m1", day: 1, hour: 0, minute: 0, second: 0, weekdayIndex: 0 };
+  const anchorB = { worldTime: 11 * day, year: 10, monthId: "m1", day: 1, hour: 0, minute: 0, second: 0, weekdayIndex: 0 };
+
+  assert.equal(service.getStates(0, datedCalendar, ["dated-moon"], { anchor: anchorA })[0].phase, "quarter");
+  assert.equal(service.getStates(11 * day, datedCalendar, ["dated-moon"], { anchor: anchorB })[0].phase, "quarter");
+});

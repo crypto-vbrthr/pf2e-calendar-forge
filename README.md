@@ -1,6 +1,15 @@
-# Calendar Forge 0.5.0
+# Calendar Forge 0.5.1
 
 Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock. Calendar Forge translates that absolute time into localized calendar dates, regional contexts, seasons, moon states, astronomy, holidays, and chronology for users and other modules.
+
+
+## 0.5.1 – System Clock Anchor Alignment
+
+0.5.1 fixes a constant-offset problem exposed by the first PF2e/Golarion provider. Foundry `game.time.worldTime` remains canonical, but a provider may now supply an optional runtime `anchorResolver` that translates a system-specific clock epoch into a Calendar Forge anchor. This changes only the interpretation baseline, never the advancing world time.
+
+The Content Providers window exposes an explicit **Synchronize with system clock** action for providers that support it. Applying suggested defaults also performs a non-destructive first alignment when no world-specific anchor exists. Existing world anchors are preserved unless the GM explicitly chooses synchronization.
+
+Moon profiles may now use a calendar-based `referenceDate` in addition to `referenceWorldTime`. This is important when a provider aligns its calendar epoch to an existing system clock: the lunar cycle remains tied to the intended in-world date instead of drifting with an arbitrary Foundry epoch.
 
 ## 0.5.0 – Provider Hardening & Golarion Integration Foundation
 

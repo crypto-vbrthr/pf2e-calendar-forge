@@ -51,6 +51,16 @@
               </button>
             </div>
           {{/if}}
+
+          {{#if provider.supportsClockAlignment}}
+            <div class="cf-provider-defaults">
+              <strong>{{localize "CALENDAR_FORGE.ProviderManager.ClockAlignment"}}</strong>
+              <span>{{localize "CALENDAR_FORGE.ProviderManager.ClockAlignmentDescription"}}</span>
+              <button type="button" data-action="alignClock" data-provider-id="{{provider.id}}" title="{{localize 'CALENDAR_FORGE.ProviderManager.AlignClockHint'}}">
+                <i class="fa-solid fa-clock-rotate-left"></i> {{localize "CALENDAR_FORGE.ProviderManager.AlignClock"}}
+              </button>
+            </div>
+          {{/if}}
         </article>
       {{/each}}
     </div>

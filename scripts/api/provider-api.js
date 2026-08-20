@@ -68,7 +68,7 @@ export class ProviderRegistrationError extends Error {
 }
 
 export class ProviderApi {
-  constructor({ calendarRegistry, seasonRegistry, moonRegistry, regionRegistry, astronomyRegistry, holidayRegistry, historicalRegistry, eventService, settings = null }) {
+  constructor({ calendarRegistry, seasonRegistry, moonRegistry, regionRegistry, astronomyRegistry, holidayRegistry, historicalRegistry, eventService, settings = null, worldData = null }) {
     this.calendars = calendarRegistry;
     this.seasons = seasonRegistry;
     this.moons = moonRegistry;
@@ -78,7 +78,9 @@ export class ProviderApi {
     this.historical = historicalRegistry;
     this.events = eventService;
     this.settings = settings;
+    this.worldData = worldData;
     this.providers = new Map();
+    this.anchorResolvers = new Map();
   }
 
   #registryFor(key) {
@@ -149,6 +151,7 @@ export class ProviderApi {
     if (provider?.id === "calendar-forge-world") errors.push("Provider id 'calendar-forge-world' is reserved");
     if (provider?.schemaVersion != null && !Number.isInteger(Number(provider.schemaVersion))) errors.push("Provider schemaVersion must be an integer");
     if (provider?.contentVersion != null && typeof provider.contentVersion !== "string") errors.push("Provider contentVersion must be a string");
+    if (provider?.anchorResolver != null && typeof provider.anchorResolver !== "function") errors.push("Provider anchorResolver must be a function");
     if (provider?.id && this.providers.has(provider.id)) errors.push(`Provider '${provider.id}' is already registered`);
 
     const content = providerContent(provider ?? {});
@@ -168,7 +171,7 @@ export class ProviderApi {
 
     validateMany(content.calendars, (definition) => validateCalendarDefinition(definition), "Calendar");
     validateMany(content.seasons, (definition) => validateSeasonProfile(definition, calendarById(definition.calendarId)), "Season profile");
-    validateMany(content.moons, (definition) => validateMoonProfile(definition), "Moon profile");
+    validateMany(content.moons, (definition) => validateMoonProfile(definition, calendarById(definition.calendarId)), "Moon profile");
     validateMany(content.regions, (definition) => validateRegionDefinition(definition), "Region");
     validateMany(content.astronomy, (definition) => validateAstronomyEvent(definition, definition.calendarId ? calendarById(definition.calendarId) : null), "Astronomical event");
     validateMany(content.holidays, (definition) => validateHolidayDefinition(definition, calendarById(definition.calendarId)), "Holiday");
@@ -266,6 +269,8 @@ export class ProviderApi {
       compatibility: clone(provider.compatibility ?? {}),
       requires: clone(provider.requires ?? []),
       defaults: clone(provider.defaults ?? {}),
+      supportsClockAlignment: typeof provider.anchorResolver === "function",
+      clockAlignment: clone(provider.clockAlignment ?? null),
       counts: diagnostics.counts,
       capabilities: diagnostics.capabilities,
       warnings: diagnostics.warnings
@@ -291,6 +296,7 @@ export class ProviderApi {
       }
       const descriptor = this.#descriptor(provider, content, diagnostics);
       this.providers.set(provider.id, descriptor);
+      if (typeof provider.anchorResolver === "function") this.anchorResolvers.set(provider.id, provider.anchorResolver);
       Hooks.callAll("calendarForgeProviderRegistered", descriptor);
       Hooks.callAll("calendarForgeDefinitionsChanged");
       return descriptor;
@@ -299,6 +305,7 @@ export class ProviderApi {
         if (item.type === "events") this.events.unregister?.(item.id);
         else this.#registryFor(item.type)?.unregister(item.id);
       }
+      this.anchorResolvers.delete(provider.id);
       this.providers.delete(provider.id);
       throw error;
     }
@@ -316,6 +323,7 @@ export class ProviderApi {
       for (const definition of registry?.list?.() ?? []) if (definition.providerId === id) registry.unregister(definition.id);
     }
     this.events?.unregisterByProvider?.(id);
+    this.anchorResolvers.delete(id);
     this.providers.delete(id);
     Hooks.callAll("calendarForgeProviderUnregistered", descriptor);
     Hooks.callAll("calendarForgeDefinitionsChanged");
@@ -343,12 +351,43 @@ export class ProviderApi {
     return this.#registryFor(type)?.get(definitionId)?.providerId === providerId;
   }
 
+  async alignClock(id, { force = false } = {}) {
+    if (!this.worldData) throw new Error("Provider clock alignment is not available in this Calendar Forge context");
+    if (typeof game !== "undefined" && !game.user?.isGM) throw new Error("Only a GM may align a provider calendar");
+    const descriptor = this.get(id);
+    if (!descriptor) throw new Error(`Unknown provider '${id}'`);
+    const resolver = this.anchorResolvers.get(id);
+    if (typeof resolver !== "function") throw new Error(`Provider '${id}' does not provide a clock-alignment adapter`);
+
+    const calendarId = descriptor.clockAlignment?.calendarId ?? descriptor.defaults?.calendarId;
+    const calendar = calendarId ? this.calendars.get(calendarId) : null;
+    if (!calendar) throw new Error(`Provider '${id}' does not define a valid calendar for clock alignment`);
+
+    const existing = this.worldData.getAnchor(calendar.id);
+    if (existing && !force) {
+      return Object.freeze({ aligned: false, reason: "existing-anchor", calendarId: calendar.id, anchor: existing });
+    }
+
+    const anchor = await resolver({
+      calendar: clone(calendar),
+      provider: descriptor,
+      worldTime: Number(globalThis.game?.time?.worldTime ?? 0)
+    });
+    if (!anchor) throw new Error(`Provider '${id}' cannot resolve the current system clock`);
+    const saved = await this.worldData.saveAnchor(calendar, anchor);
+    Hooks.callAll("calendarForgeProviderClockAligned", descriptor, saved);
+    return Object.freeze({ aligned: true, reason: "aligned", calendarId: calendar.id, anchor: saved });
+  }
+
   async applyDefaults(id) {
     if (!this.settings) throw new Error("Provider defaults are not available in this Calendar Forge context");
     if (typeof game !== "undefined" && !game.user?.isGM) throw new Error("Only a GM may apply provider defaults");
     const descriptor = this.get(id);
     if (!descriptor) throw new Error(`Unknown provider '${id}'`);
     const defaults = descriptor.defaults ?? {};
+    if (descriptor.supportsClockAlignment && defaults.alignClock !== false && this.worldData) {
+      await this.alignClock(id, { force: false });
+    }
     if (defaults.calendarId) await this.settings.setActiveCalendarId(defaults.calendarId);
     if (Object.prototype.hasOwnProperty.call(defaults, "regionId")) await this.settings.setDefaultRegionId(defaults.regionId ?? null);
     if (Object.prototype.hasOwnProperty.call(defaults, "seasonProfileId")) await this.settings.setActiveSeasonProfileId(defaults.seasonProfileId ?? "");

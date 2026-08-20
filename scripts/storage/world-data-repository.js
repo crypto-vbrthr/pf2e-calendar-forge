@@ -67,7 +67,7 @@ export class WorldDataRepository {
     }
     for (const profile of this.data.moonProfiles) {
       try {
-        validateMoonProfile(profile);
+        validateMoonProfile(profile, this.calendars.get(profile.calendarId));
         this.moons.register({ ...profile, providerId: WORLD_PROVIDER_ID }, { replace: true });
       } catch (error) {
         console.warn("Calendar Forge | Skipping invalid world moon profile", profile?.id, error);
@@ -227,7 +227,8 @@ export class WorldDataRepository {
   async saveMoonProfile(definition) {
     const normalized = { ...clone(definition), providerId: WORLD_PROVIDER_ID };
     if (normalized.calendarId && !this.calendars.has(normalized.calendarId)) throw new Error(`Unknown calendar '${normalized.calendarId}'`);
-    validateMoonProfile(normalized);
+    const calendar = normalized.calendarId ? this.calendars.get(normalized.calendarId) : null;
+    validateMoonProfile(normalized, calendar);
     const index = this.data.moonProfiles.findIndex((entry) => entry.id === normalized.id);
     if (index < 0 && this.moons.has(normalized.id)) throw new Error(`Moon profile id '${normalized.id}' is already provided by another source`);
     if (index >= 0) this.data.moonProfiles[index] = normalized;

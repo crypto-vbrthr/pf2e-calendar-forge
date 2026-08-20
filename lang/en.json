@@ -416,7 +416,12 @@
         "holidays": "Holidays",
         "historical": "History",
         "events": "Events"
-      }
+      },
+      "AlignClock": "Synchronize with system clock",
+      "AlignClockHint": "Align this provider calendar anchor with the current system clock. An existing calendar anchor will be replaced.",
+      "ClockAligned": "Calendar from {id} was synchronized with the system clock.",
+      "ClockAlignment": "System clock alignment",
+      "ClockAlignmentDescription": "This provider can align its calendar anchor with the game system clock baseline."
     }
   }
 }

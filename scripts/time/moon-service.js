@@ -1,3 +1,4 @@
+import { CalendarEngine } from "../calendar/calendar-engine.js";
 import { resolveLabel } from "../localization/label-resolver.js";
 
 function mod(value, divisor) {
@@ -20,10 +21,25 @@ export class MoonService {
       * (calendar.time?.hoursPerDay ?? 24);
   }
 
-  #profileState(profile, worldTime, calendar) {
+  #referenceWorldTime(profile, calendar, anchor = null) {
+    if (profile.referenceDate && anchor) {
+      return CalendarEngine.toWorldTime({
+        year: Number(profile.referenceDate.year),
+        monthId: profile.referenceDate.monthId,
+        day: Number(profile.referenceDate.day),
+        hour: Number(profile.referenceDate.hour ?? 0),
+        minute: Number(profile.referenceDate.minute ?? 0),
+        second: Number(profile.referenceDate.second ?? 0)
+      }, calendar, anchor);
+    }
+    return Number(profile.referenceWorldTime ?? 0);
+  }
+
+  #profileState(profile, worldTime, calendar, anchor = null) {
     const cycleDays = Number(profile.cycleLengthDays);
     const cycleSeconds = cycleDays * this.#secondsPerDay(calendar);
-    const elapsed = Number(worldTime) - Number(profile.referenceWorldTime ?? 0);
+    const referenceWorldTime = this.#referenceWorldTime(profile, calendar, anchor);
+    const elapsed = Number(worldTime) - referenceWorldTime;
     const progress = mod(Number(profile.referenceProgress ?? 0) + elapsed / cycleSeconds, 1);
     const phases = [...(profile.phases ?? [])].sort((a, b) => Number(a.start) - Number(b.start));
     let activeIndex = 0;
@@ -50,14 +66,14 @@ export class MoonService {
     };
   }
 
-  getStates(worldTime, calendar, profileIds = []) {
+  getStates(worldTime, calendar, profileIds = [], { anchor = null } = {}) {
     return profileIds
       .map((id) => this.registry.get(id))
       .filter((profile) => profile && (!profile.calendarId || profile.calendarId === calendar.id))
-      .map((profile) => this.#profileState(profile, worldTime, calendar));
+      .map((profile) => this.#profileState(profile, worldTime, calendar, anchor));
   }
 
-  getTransitionsBetween(startWorldTime, endWorldTime, calendar, profileIds = [], { markersOnly = false } = {}) {
+  getTransitionsBetween(startWorldTime, endWorldTime, calendar, profileIds = [], { markersOnly = false, anchor = null } = {}) {
     let start = Number(startWorldTime);
     let end = Number(endWorldTime);
     if (!Number.isFinite(start) || !Number.isFinite(end) || start === end) return [];
@@ -70,7 +86,7 @@ export class MoonService {
       if (!profile || (profile.calendarId && profile.calendarId !== calendar.id)) continue;
       const cycleSeconds = Number(profile.cycleLengthDays) * secondsPerDay;
       if (!(cycleSeconds > 0)) continue;
-      const referenceWorldTime = Number(profile.referenceWorldTime ?? 0);
+      const referenceWorldTime = this.#referenceWorldTime(profile, calendar, anchor);
       const referenceProgress = Number(profile.referenceProgress ?? 0);
       const phases = [...(profile.phases ?? [])].sort((a, b) => Number(a.start) - Number(b.start));
       for (const phase of phases) {

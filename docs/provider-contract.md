@@ -58,6 +58,42 @@ defaults: {
 
 These values are never applied automatically. A GM may apply them from the Content Providers window or with `api.providers.applyDefaults(providerId)`.
 
+### Optional system-clock alignment
+
+A setting/system provider may additionally supply a runtime `anchorResolver`. The resolver is intentionally code, not persisted provider data, because it may read a game-system clock such as PF2e's World Clock:
+
+```js
+api.providers.register({
+  // ...provider data...
+  clockAlignment: { calendarId: "setting-calendar", source: "my-system-clock" },
+  anchorResolver: async ({ calendar, worldTime }) => ({
+    worldTime: 0,
+    year: 1234,
+    monthId: calendar.months[0].id,
+    day: 1,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    weekdayIndex: 0
+  }),
+  defaults: { calendarId: "setting-calendar", alignClock: true }
+});
+```
+
+`api.providers.alignClock(providerId)` stores the resolved anchor in world data. `applyDefaults()` attempts the alignment only when no world-specific anchor already exists. The Provider Manager's explicit synchronization action may replace an existing anchor. Canonical Foundry `worldTime` is never reset or rewritten.
+
+Moon definitions that must remain tied to a setting date can use `referenceDate` instead of `referenceWorldTime`:
+
+```js
+{
+  cycleLengthDays: 29.5,
+  referenceDate: { year: 4712, monthId: "abadius", day: 1 },
+  referenceProgress: 0.25
+}
+```
+
+Calendar Forge resolves that date through the active calendar anchor before calculating moon phase and transitions.
+
 ## Localization
 
 All user-visible provider labels should be normal Foundry localization references:
