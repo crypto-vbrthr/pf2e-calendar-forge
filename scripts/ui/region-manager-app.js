@@ -85,6 +85,23 @@ export class RegionManagerApp extends HandlebarsApplicationMixin(ApplicationV2) 
     this.draft.moonProfileIds = [...root.querySelectorAll('[name="region.moons"]:checked')].map((input) => input.value);
   }
 
+  _onRender(context, options) {
+    super._onRender(context, options);
+    const root = rootOf(this);
+    const select = root?.querySelector('[name="region.calendarId"]');
+    if (select) select.addEventListener("change", () => {
+      this.#capture();
+      const calendarId = this.draft?.calendarId;
+      const season = this.services.registries.seasons.get(this.draft?.seasonProfileId);
+      if (season && season.calendarId !== calendarId) this.draft.seasonProfileId = null;
+      this.draft.moonProfileIds = (this.draft.moonProfileIds ?? []).filter((id) => {
+        const moon = this.services.registries.moons.get(id);
+        return moon && (!moon.calendarId || moon.calendarId === calendarId);
+      });
+      this.render({ force: true });
+    }, { once: true });
+  }
+
   async _prepareContext(options) {
     this.#ensureSelection();
     const context = await super._prepareContext(options);
@@ -103,13 +120,13 @@ export class RegionManagerApp extends HandlebarsApplicationMixin(ApplicationV2) 
       label: resolveLabel(calendar.label, calendar.id),
       selected: calendar.id === this.draft?.calendarId
     })).sort((a, b) => a.label.localeCompare(b.label));
-    const seasons = this.services.registries.seasons.list().map((profile) => ({
+    const seasons = this.services.registries.seasons.list().filter((profile) => !this.draft?.calendarId || profile.calendarId === this.draft.calendarId).map((profile) => ({
       id: profile.id,
       label: resolveLabel(profile.label, profile.id),
       selected: profile.id === this.draft?.seasonProfileId
     })).sort((a, b) => a.label.localeCompare(b.label));
     const selectedMoons = new Set(this.draft?.moonProfileIds ?? []);
-    const moons = this.services.registries.moons.list().map((profile) => ({
+    const moons = this.services.registries.moons.list().filter((profile) => !this.draft?.calendarId || !profile.calendarId || profile.calendarId === this.draft.calendarId).map((profile) => ({
       id: profile.id,
       label: resolveLabel(profile.label, profile.id),
       selected: selectedMoons.has(profile.id)

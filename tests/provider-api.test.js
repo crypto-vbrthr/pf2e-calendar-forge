@@ -19,11 +19,13 @@ function build() {
   const seasons = new DefinitionRegistry("season");
   const moons = new DefinitionRegistry("moon");
   const regions = new DefinitionRegistry("region");
+  const astronomy = new DefinitionRegistry("astronomy");
   const events = { register() {} };
   return {
     calendars,
     regions,
-    api: new ProviderApi({ calendarRegistry: calendars, seasonRegistry: seasons, moonRegistry: moons, regionRegistry: regions, eventService: events })
+    astronomy,
+    api: new ProviderApi({ calendarRegistry: calendars, seasonRegistry: seasons, moonRegistry: moons, regionRegistry: regions, astronomyRegistry: astronomy, eventService: events })
   };
 }
 
@@ -48,4 +50,17 @@ test("provider rejects duplicate month ids before mutating registries", () => {
     calendars: [{ ...calendar, id: "bad-calendar", months: [{ id: "same", days: 30 }, { id: "same", days: 30 }] }]
   }), /Duplicate month id/);
   assert.equal(calendars.has("bad-calendar"), false);
+});
+
+
+test("provider can register localized season, moon, and astronomical definitions", () => {
+  const { api, astronomy } = build();
+  api.register({
+    id: "sky-provider",
+    calendars: [{ ...calendar, id: "sky-calendar" }],
+    seasonProfiles: [{ id: "sky-seasons", calendarId: "sky-calendar", label: { value: "Seasons" }, seasons: [{ id: "warm", monthId: "month", day: 1 }] }],
+    moonProfiles: [{ id: "sky-moon", calendarId: "sky-calendar", label: { value: "Moon" }, cycleLengthDays: 20, referenceWorldTime: 0, referenceProgress: 0, phases: [{ id: "new", start: 0 }] }],
+    astronomyEvents: [{ id: "sky-eclipse", calendarId: "sky-calendar", label: { value: "Eclipse" }, type: "solar-eclipse", mode: "date", date: { monthId: "month", day: 2 } }]
+  });
+  assert.equal(astronomy.get("sky-eclipse").providerId, "sky-provider");
 });

@@ -1,5 +1,12 @@
 import { MODULE_ID, SETTINGS } from "../constants.js";
-import { validateAnchor, validateCalendarDefinition, validateRegionDefinition } from "../validation/definition-validator.js";
+import {
+  validateAnchor,
+  validateAstronomyEvent,
+  validateCalendarDefinition,
+  validateMoonProfile,
+  validateRegionDefinition,
+  validateSeasonProfile
+} from "../validation/definition-validator.js";
 
 const WORLD_PROVIDER_ID = "calendar-forge-world";
 
@@ -8,10 +15,13 @@ function clone(value) {
 }
 
 export class WorldDataRepository {
-  constructor({ calendarRegistry, regionRegistry }) {
+  constructor({ calendarRegistry, regionRegistry, seasonRegistry, moonRegistry, astronomyRegistry }) {
     this.calendars = calendarRegistry;
     this.regions = regionRegistry;
-    this.data = { calendars: [], regions: [], anchors: {} };
+    this.seasons = seasonRegistry;
+    this.moons = moonRegistry;
+    this.astronomy = astronomyRegistry;
+    this.data = { calendars: [], regions: [], seasonProfiles: [], moonProfiles: [], astronomyEvents: [], anchors: {} };
   }
 
   async load() {
@@ -19,6 +29,9 @@ export class WorldDataRepository {
     this.data = {
       calendars: Array.isArray(stored.calendars) ? clone(stored.calendars) : [],
       regions: Array.isArray(stored.regions) ? clone(stored.regions) : [],
+      seasonProfiles: Array.isArray(stored.seasonProfiles) ? clone(stored.seasonProfiles) : [],
+      moonProfiles: Array.isArray(stored.moonProfiles) ? clone(stored.moonProfiles) : [],
+      astronomyEvents: Array.isArray(stored.astronomyEvents) ? clone(stored.astronomyEvents) : [],
       anchors: stored.anchors && typeof stored.anchors === "object" ? clone(stored.anchors) : {}
     };
 
@@ -38,6 +51,30 @@ export class WorldDataRepository {
         console.warn("Calendar Forge | Skipping invalid world region", region?.id, error);
       }
     }
+    for (const profile of this.data.seasonProfiles) {
+      try {
+        validateSeasonProfile(profile, this.calendars.get(profile.calendarId));
+        this.seasons.register({ ...profile, providerId: WORLD_PROVIDER_ID }, { replace: true });
+      } catch (error) {
+        console.warn("Calendar Forge | Skipping invalid world season profile", profile?.id, error);
+      }
+    }
+    for (const profile of this.data.moonProfiles) {
+      try {
+        validateMoonProfile(profile);
+        this.moons.register({ ...profile, providerId: WORLD_PROVIDER_ID }, { replace: true });
+      } catch (error) {
+        console.warn("Calendar Forge | Skipping invalid world moon profile", profile?.id, error);
+      }
+    }
+    for (const event of this.data.astronomyEvents) {
+      try {
+        validateAstronomyEvent(event, event.calendarId ? this.calendars.get(event.calendarId) : null);
+        this.astronomy.register({ ...event, providerId: WORLD_PROVIDER_ID }, { replace: true });
+      } catch (error) {
+        console.warn("Calendar Forge | Skipping invalid world astronomical event", event?.id, error);
+      }
+    }
   }
 
   async #persist() {
@@ -45,13 +82,11 @@ export class WorldDataRepository {
     Hooks.callAll("calendarForgeDefinitionsChanged");
   }
 
-  isWorldCalendar(id) {
-    return this.data.calendars.some((calendar) => calendar.id === id);
-  }
-
-  isWorldRegion(id) {
-    return this.data.regions.some((region) => region.id === id);
-  }
+  isWorldCalendar(id) { return this.data.calendars.some((entry) => entry.id === id); }
+  isWorldRegion(id) { return this.data.regions.some((entry) => entry.id === id); }
+  isWorldSeasonProfile(id) { return this.data.seasonProfiles.some((entry) => entry.id === id); }
+  isWorldMoonProfile(id) { return this.data.moonProfiles.some((entry) => entry.id === id); }
+  isWorldAstronomyEvent(id) { return this.data.astronomyEvents.some((entry) => entry.id === id); }
 
   getAnchor(calendarId) {
     return this.data.anchors?.[calendarId] ? clone(this.data.anchors[calendarId]) : null;
@@ -67,7 +102,7 @@ export class WorldDataRepository {
   async saveCalendar(definition, anchor = null) {
     const normalized = { ...clone(definition), providerId: WORLD_PROVIDER_ID };
     validateCalendarDefinition(normalized);
-    const index = this.data.calendars.findIndex((calendar) => calendar.id === normalized.id);
+    const index = this.data.calendars.findIndex((entry) => entry.id === normalized.id);
     if (index < 0 && this.calendars.has(normalized.id)) throw new Error(`Calendar id '${normalized.id}' is already provided by another source`);
     if (index >= 0) this.data.calendars[index] = normalized;
     else this.data.calendars.push(normalized);
@@ -81,10 +116,16 @@ export class WorldDataRepository {
   }
 
   async deleteCalendar(id) {
-    const usedBy = this.regions.list().find((region) => region.calendarId === id);
-    if (usedBy) throw new Error(`Calendar '${id}' is used by region '${usedBy.id}'`);
+    const usedByRegion = this.regions.list().find((region) => region.calendarId === id);
+    if (usedByRegion) throw new Error(`Calendar '${id}' is used by region '${usedByRegion.id}'`);
+    const usedBySeason = this.seasons.list().find((profile) => profile.calendarId === id);
+    if (usedBySeason) throw new Error(`Calendar '${id}' is used by season profile '${usedBySeason.id}'`);
+    const usedByMoon = this.moons.list().find((profile) => profile.calendarId === id);
+    if (usedByMoon) throw new Error(`Calendar '${id}' is used by moon profile '${usedByMoon.id}'`);
+    const usedByAstronomy = this.astronomy.list().find((event) => event.calendarId === id);
+    if (usedByAstronomy) throw new Error(`Calendar '${id}' is used by astronomical event '${usedByAstronomy.id}'`);
     const before = this.data.calendars.length;
-    this.data.calendars = this.data.calendars.filter((calendar) => calendar.id !== id);
+    this.data.calendars = this.data.calendars.filter((entry) => entry.id !== id);
     delete this.data.anchors[id];
     if (this.data.calendars.length === before) return false;
     this.calendars.unregister(id);
@@ -96,7 +137,17 @@ export class WorldDataRepository {
     const normalized = { ...clone(definition), providerId: WORLD_PROVIDER_ID };
     validateRegionDefinition(normalized);
     if (normalized.calendarId && !this.calendars.has(normalized.calendarId)) throw new Error(`Unknown calendar '${normalized.calendarId}'`);
-    const index = this.data.regions.findIndex((region) => region.id === normalized.id);
+    if (normalized.seasonProfileId) {
+      const season = this.seasons.get(normalized.seasonProfileId);
+      if (!season) throw new Error(`Unknown season profile '${normalized.seasonProfileId}'`);
+      if (normalized.calendarId && season.calendarId !== normalized.calendarId) throw new Error(`Season profile '${season.id}' belongs to calendar '${season.calendarId}'`);
+    }
+    for (const id of normalized.moonProfileIds ?? []) {
+      const moon = this.moons.get(id);
+      if (!moon) throw new Error(`Unknown moon profile '${id}'`);
+      if (normalized.calendarId && moon.calendarId && moon.calendarId !== normalized.calendarId) throw new Error(`Moon profile '${moon.id}' belongs to calendar '${moon.calendarId}'`);
+    }
+    const index = this.data.regions.findIndex((entry) => entry.id === normalized.id);
     if (index < 0 && this.regions.has(normalized.id)) throw new Error(`Region id '${normalized.id}' is already provided by another source`);
     if (index >= 0) this.data.regions[index] = normalized;
     else this.data.regions.push(normalized);
@@ -107,9 +158,81 @@ export class WorldDataRepository {
 
   async deleteRegion(id) {
     const before = this.data.regions.length;
-    this.data.regions = this.data.regions.filter((region) => region.id !== id);
+    this.data.regions = this.data.regions.filter((entry) => entry.id !== id);
     if (this.data.regions.length === before) return false;
     this.regions.unregister(id);
+    await this.#persist();
+    return true;
+  }
+
+  async saveSeasonProfile(definition) {
+    const normalized = { ...clone(definition), providerId: WORLD_PROVIDER_ID };
+    const calendar = this.calendars.get(normalized.calendarId);
+    if (!calendar) throw new Error(`Unknown calendar '${normalized.calendarId}'`);
+    validateSeasonProfile(normalized, calendar);
+    const index = this.data.seasonProfiles.findIndex((entry) => entry.id === normalized.id);
+    if (index < 0 && this.seasons.has(normalized.id)) throw new Error(`Season profile id '${normalized.id}' is already provided by another source`);
+    if (index >= 0) this.data.seasonProfiles[index] = normalized;
+    else this.data.seasonProfiles.push(normalized);
+    this.seasons.register(normalized, { replace: true });
+    await this.#persist();
+    return this.seasons.get(normalized.id);
+  }
+
+  async deleteSeasonProfile(id) {
+    const usedBy = this.regions.list().find((region) => region.seasonProfileId === id);
+    if (usedBy) throw new Error(`Season profile '${id}' is used by region '${usedBy.id}'`);
+    const before = this.data.seasonProfiles.length;
+    this.data.seasonProfiles = this.data.seasonProfiles.filter((entry) => entry.id !== id);
+    if (this.data.seasonProfiles.length === before) return false;
+    this.seasons.unregister(id);
+    await this.#persist();
+    return true;
+  }
+
+  async saveMoonProfile(definition) {
+    const normalized = { ...clone(definition), providerId: WORLD_PROVIDER_ID };
+    if (normalized.calendarId && !this.calendars.has(normalized.calendarId)) throw new Error(`Unknown calendar '${normalized.calendarId}'`);
+    validateMoonProfile(normalized);
+    const index = this.data.moonProfiles.findIndex((entry) => entry.id === normalized.id);
+    if (index < 0 && this.moons.has(normalized.id)) throw new Error(`Moon profile id '${normalized.id}' is already provided by another source`);
+    if (index >= 0) this.data.moonProfiles[index] = normalized;
+    else this.data.moonProfiles.push(normalized);
+    this.moons.register(normalized, { replace: true });
+    await this.#persist();
+    return this.moons.get(normalized.id);
+  }
+
+  async deleteMoonProfile(id) {
+    const usedBy = this.regions.list().find((region) => (region.moonProfileIds ?? []).includes(id));
+    if (usedBy) throw new Error(`Moon profile '${id}' is used by region '${usedBy.id}'`);
+    const before = this.data.moonProfiles.length;
+    this.data.moonProfiles = this.data.moonProfiles.filter((entry) => entry.id !== id);
+    if (this.data.moonProfiles.length === before) return false;
+    this.moons.unregister(id);
+    await this.#persist();
+    return true;
+  }
+
+  async saveAstronomyEvent(definition) {
+    const normalized = { ...clone(definition), providerId: WORLD_PROVIDER_ID };
+    if (normalized.calendarId && !this.calendars.has(normalized.calendarId)) throw new Error(`Unknown calendar '${normalized.calendarId}'`);
+    if (normalized.regionId && !this.regions.has(normalized.regionId)) throw new Error(`Unknown region '${normalized.regionId}'`);
+    validateAstronomyEvent(normalized, normalized.calendarId ? this.calendars.get(normalized.calendarId) : null);
+    const index = this.data.astronomyEvents.findIndex((entry) => entry.id === normalized.id);
+    if (index < 0 && this.astronomy.has(normalized.id)) throw new Error(`Astronomical event id '${normalized.id}' is already provided by another source`);
+    if (index >= 0) this.data.astronomyEvents[index] = normalized;
+    else this.data.astronomyEvents.push(normalized);
+    this.astronomy.register(normalized, { replace: true });
+    await this.#persist();
+    return this.astronomy.get(normalized.id);
+  }
+
+  async deleteAstronomyEvent(id) {
+    const before = this.data.astronomyEvents.length;
+    this.data.astronomyEvents = this.data.astronomyEvents.filter((entry) => entry.id !== id);
+    if (this.data.astronomyEvents.length === before) return false;
+    this.astronomy.unregister(id);
     await this.#persist();
     return true;
   }

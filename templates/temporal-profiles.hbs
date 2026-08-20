@@ -1,0 +1,147 @@
+<div class="cf-profile-shell">
+  <header class="cf-profile-tabs">
+    {{#each modes as |tab|}}
+      <button type="button" class="{{#if tab.selected}}is-active{{/if}}" data-action="setMode" data-mode="{{tab.id}}"><i class="fa-solid {{tab.icon}}"></i> {{tab.label}}</button>
+    {{/each}}
+  </header>
+
+  <div class="cf-manager-shell cf-profile-manager-shell">
+    <aside class="cf-manager-list">
+      <div class="cf-manager-list-header">
+        <strong>{{#if isSeasons}}{{localize "CALENDAR_FORGE.TemporalProfiles.Modes.seasons"}}{{else}}{{#if isMoons}}{{localize "CALENDAR_FORGE.TemporalProfiles.Modes.moons"}}{{else}}{{localize "CALENDAR_FORGE.TemporalProfiles.Modes.astronomy"}}{{/if}}{{/if}}</strong>
+        <button type="button" data-action="newDefinition"><i class="fa-solid fa-plus"></i></button>
+      </div>
+      <div class="cf-manager-items">
+        {{#each items as |item|}}
+          <button type="button" class="cf-manager-item {{#if item.selected}}is-selected{{/if}}" data-action="selectDefinition" data-definition-id="{{item.id}}">
+            <span><strong>{{item.label}}</strong><small>{{item.providerId}}</small></span>
+            <span class="cf-manager-badges">
+              {{#if item.isDefault}}<i class="fa-solid fa-star" data-tooltip="{{localize 'CALENDAR_FORGE.TemporalProfiles.WorldDefault'}}"></i>{{/if}}
+              {{#if item.isWorld}}<i class="fa-solid fa-pen"></i>{{else}}<i class="fa-solid fa-box"></i>{{/if}}
+            </span>
+          </button>
+        {{/each}}
+      </div>
+    </aside>
+
+    <main class="cf-manager-editor">
+      {{#if hasSelection}}
+        <header class="cf-manager-toolbar">
+          <div><div class="cf-eyebrow">{{providerId}}</div><strong>{{definition.label.value}}</strong></div>
+          <div class="cf-manager-actions">
+            {{#if isSeasons}}{{#unless isDefaultSeason}}<button type="button" data-action="setDefaultSeason"><i class="fa-solid fa-star"></i> {{localize "CALENDAR_FORGE.TemporalProfiles.SetDefaultSeason"}}</button>{{/unless}}{{/if}}
+            {{#if isMoons}}<button type="button" data-action="toggleDefaultMoon"><i class="fa-solid {{#if isDefaultMoon}}fa-toggle-on{{else}}fa-toggle-off{{/if}}"></i> {{#if isDefaultMoon}}{{localize "CALENDAR_FORGE.TemporalProfiles.RemoveDefaultMoon"}}{{else}}{{localize "CALENDAR_FORGE.TemporalProfiles.AddDefaultMoon"}}{{/if}}</button>{{/if}}
+            <button type="button" data-action="duplicateDefinition"><i class="fa-solid fa-copy"></i> {{localize "CALENDAR_FORGE.TemporalProfiles.Duplicate"}}</button>
+            {{#if editable}}<button type="button" class="cf-primary" data-action="saveDefinition"><i class="fa-solid fa-floppy-disk"></i> {{localize "CALENDAR_FORGE.TemporalProfiles.Save"}}</button>{{/if}}
+            {{#if editable}}{{#unless isNew}}<button type="button" class="cf-danger" data-action="deleteDefinition"><i class="fa-solid fa-trash"></i></button>{{/unless}}{{/if}}
+          </div>
+        </header>
+
+        <div class="cf-manager-scroll">
+          <section class="cf-manager-section">
+            <h3>{{localize "CALENDAR_FORGE.TemporalProfiles.Basics"}}</h3>
+            <div class="cf-form-grid three">
+              <label><span>{{localize "CALENDAR_FORGE.Fields.Id"}}</span><input name="definition.id" value="{{definition.id}}" {{#unless isNew}}disabled{{/unless}}></label>
+              <label><span>{{localize "CALENDAR_FORGE.Fields.Name"}}</span><input name="definition.label" value="{{definition.label.value}}" {{#unless editable}}disabled{{/unless}}></label>
+              <label><span>{{localize "CALENDAR_FORGE.Fields.Calendar"}}</span><select class="cf-profile-calendar-select" name="definition.calendarId" {{#unless editable}}disabled{{/unless}}>{{#each calendars as |calendar|}}<option value="{{calendar.id}}" {{#if calendar.selected}}selected{{/if}}>{{calendar.label}}</option>{{/each}}</select></label>
+            </div>
+          </section>
+
+          {{#if isSeasons}}
+            <section class="cf-manager-section">
+              <div class="cf-section-heading"><h3>{{localize "CALENDAR_FORGE.TemporalProfiles.SeasonBoundaries"}}</h3>{{#if editable}}<button type="button" data-action="addSeason"><i class="fa-solid fa-plus"></i> {{localize "CALENDAR_FORGE.TemporalProfiles.AddSeason"}}</button>{{/if}}</div>
+              <p class="cf-help">{{localize "CALENDAR_FORGE.TemporalProfiles.SeasonHelp"}}</p>
+              <div class="cf-row-table cf-season-table">
+                <div class="cf-row-table-head"><span>{{localize "CALENDAR_FORGE.Fields.Id"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Name"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Month"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Day"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Icon"}}</span><span></span></div>
+                {{#each seasonRows as |season|}}
+                  <div class="cf-row-table-row" data-season-row>
+                    <input data-field="id" value="{{season.id}}" {{#unless ../editable}}disabled{{/unless}}>
+                    <input data-field="label" value="{{season.label.value}}" {{#unless ../editable}}disabled{{/unless}}>
+                    <select data-field="monthId" {{#unless ../editable}}disabled{{/unless}}>{{#each season.monthOptions as |month|}}<option value="{{month.id}}" {{#if month.selected}}selected{{/if}}>{{month.label}}</option>{{/each}}</select>
+                    <input type="number" min="1" data-field="day" value="{{season.day}}" {{#unless ../editable}}disabled{{/unless}}>
+                    <input data-field="icon" value="{{season.icon}}" {{#unless ../editable}}disabled{{/unless}}>
+                    {{#if ../editable}}<button type="button" data-action="removeSeason" data-index="{{season.index}}"><i class="fa-solid fa-minus"></i></button>{{/if}}
+                  </div>
+                {{/each}}
+              </div>
+            </section>
+          {{/if}}
+
+          {{#if isMoons}}
+            <section class="cf-manager-section">
+              <h3>{{localize "CALENDAR_FORGE.TemporalProfiles.MoonCycle"}}</h3>
+              <div class="cf-form-grid three">
+                <label><span>{{localize "CALENDAR_FORGE.Fields.CycleLengthDays"}}</span><input type="number" min="0.000001" step="0.000001" name="moon.cycleLengthDays" value="{{definition.cycleLengthDays}}" {{#unless editable}}disabled{{/unless}}></label>
+                <label><span>{{localize "CALENDAR_FORGE.Fields.ReferenceWorldTime"}}</span><input type="number" name="moon.referenceWorldTime" value="{{definition.referenceWorldTime}}" {{#unless editable}}disabled{{/unless}}></label>
+                <label><span>{{localize "CALENDAR_FORGE.Fields.ReferenceProgress"}}</span><input type="number" min="0" max="0.999999" step="0.000001" name="moon.referenceProgress" value="{{definition.referenceProgress}}" {{#unless editable}}disabled{{/unless}}></label>
+              </div>
+              <p class="cf-help">{{localize "CALENDAR_FORGE.TemporalProfiles.MoonHelp"}}</p>
+            </section>
+            <section class="cf-manager-section">
+              <div class="cf-section-heading"><h3>{{localize "CALENDAR_FORGE.TemporalProfiles.MoonPhases"}}</h3>{{#if editable}}<button type="button" data-action="addPhase"><i class="fa-solid fa-plus"></i> {{localize "CALENDAR_FORGE.TemporalProfiles.AddPhase"}}</button>{{/if}}</div>
+              <div class="cf-row-table cf-phase-table">
+                <div class="cf-row-table-head"><span>{{localize "CALENDAR_FORGE.Fields.Id"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Name"}}</span><span>{{localize "CALENDAR_FORGE.Fields.PhaseStart"}}</span><span>{{localize "CALENDAR_FORGE.Fields.Icon"}}</span><span>{{localize "CALENDAR_FORGE.Fields.CalendarMarker"}}</span><span></span></div>
+                {{#each phaseRows as |phase|}}
+                  <div class="cf-row-table-row" data-phase-row>
+                    <input data-field="id" value="{{phase.id}}" {{#unless ../editable}}disabled{{/unless}}>
+                    <input data-field="label" value="{{phase.label.value}}" {{#unless ../editable}}disabled{{/unless}}>
+                    <input type="number" min="0" max="0.999999" step="0.000001" data-field="start" value="{{phase.start}}" {{#unless ../editable}}disabled{{/unless}}>
+                    <input data-field="icon" value="{{phase.icon}}" {{#unless ../editable}}disabled{{/unless}}>
+                    <label class="cf-inline-check"><input type="checkbox" data-field="marker" {{#if phase.marker}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}}><span>{{localize "CALENDAR_FORGE.TemporalProfiles.ShowMarker"}}</span></label>
+                    {{#if ../editable}}<button type="button" data-action="removePhase" data-index="{{phase.index}}"><i class="fa-solid fa-minus"></i></button>{{/if}}
+                  </div>
+                {{/each}}
+              </div>
+            </section>
+          {{/if}}
+
+          {{#if isAstronomy}}
+            <section class="cf-manager-section">
+              <h3>{{localize "CALENDAR_FORGE.TemporalProfiles.AstronomyDetails"}}</h3>
+              <div class="cf-form-grid four">
+                <label><span>{{localize "CALENDAR_FORGE.Fields.EventType"}}</span><select name="astronomy.type" {{#unless editable}}disabled{{/unless}}>{{#each astronomyTypes as |type|}}<option value="{{type.id}}" {{#if type.selected}}selected{{/if}}>{{type.label}}</option>{{/each}}</select></label>
+                <label><span>{{localize "CALENDAR_FORGE.Fields.EventMode"}}</span><select class="cf-astronomy-mode-select" name="astronomy.mode" {{#unless editable}}disabled{{/unless}}>{{#each astronomyModes as |mode|}}<option value="{{mode.id}}" {{#if mode.selected}}selected{{/if}}>{{mode.label}}</option>{{/each}}</select></label>
+                <label><span>{{localize "CALENDAR_FORGE.Fields.Visibility"}}</span><select name="astronomy.visibility" {{#unless editable}}disabled{{/unless}}>{{#each visibilities as |visibility|}}<option value="{{visibility.id}}" {{#if visibility.selected}}selected{{/if}}>{{visibility.label}}</option>{{/each}}</select></label>
+                <label><span>{{localize "CALENDAR_FORGE.Fields.Region"}}</span><select name="astronomy.regionId" {{#unless editable}}disabled{{/unless}}>{{#each regions as |region|}}<option value="{{region.id}}" {{#if region.selected}}selected{{/if}}>{{region.label}}</option>{{/each}}</select></label>
+                <label><span>{{localize "CALENDAR_FORGE.Fields.Icon"}}</span><input name="astronomy.icon" value="{{definition.icon}}" {{#unless editable}}disabled{{/unless}}></label>
+                <label><span>{{localize "CALENDAR_FORGE.Fields.DurationSeconds"}}</span><input type="number" min="0" name="astronomy.durationSeconds" value="{{definition.durationSeconds}}" {{#unless editable}}disabled{{/unless}}></label>
+              </div>
+              <p class="cf-help">{{localize "CALENDAR_FORGE.TemporalProfiles.AstronomyHelp"}}</p>
+            </section>
+
+            {{#if isDateMode}}
+              <section class="cf-manager-section">
+                <h3>{{localize "CALENDAR_FORGE.TemporalProfiles.FixedDate"}}</h3>
+                <div class="cf-form-grid four">
+                  <label><span>{{localize "CALENDAR_FORGE.Fields.YearOptional"}}</span><input type="number" name="astronomy.year" value="{{definition.date.year}}" placeholder="{{localize 'CALENDAR_FORGE.TemporalProfiles.Yearly'}}" {{#unless editable}}disabled{{/unless}}></label>
+                  <label><span>{{localize "CALENDAR_FORGE.Fields.Month"}}</span><select name="astronomy.monthId" {{#unless editable}}disabled{{/unless}}>{{#each eventMonthOptions as |month|}}<option value="{{month.id}}" {{#if month.selected}}selected{{/if}}>{{month.label}}</option>{{/each}}</select></label>
+                  <label><span>{{localize "CALENDAR_FORGE.Fields.Day"}}</span><input type="number" min="1" name="astronomy.day" value="{{definition.date.day}}" {{#unless editable}}disabled{{/unless}}></label>
+                  <label><span>{{localize "CALENDAR_FORGE.Fields.Hour"}}</span><input type="number" min="0" name="astronomy.hour" value="{{definition.date.hour}}" {{#unless editable}}disabled{{/unless}}></label>
+                  <label><span>{{localize "CALENDAR_FORGE.Fields.Minute"}}</span><input type="number" min="0" name="astronomy.minute" value="{{definition.date.minute}}" {{#unless editable}}disabled{{/unless}}></label>
+                  <label><span>{{localize "CALENDAR_FORGE.Fields.Second"}}</span><input type="number" min="0" name="astronomy.second" value="{{definition.date.second}}" {{#unless editable}}disabled{{/unless}}></label>
+                </div>
+              </section>
+            {{/if}}
+
+            {{#if isCycleMode}}
+              <section class="cf-manager-section">
+                <h3>{{localize "CALENDAR_FORGE.TemporalProfiles.CycleEvent"}}</h3>
+                <div class="cf-form-grid two">
+                  <label><span>{{localize "CALENDAR_FORGE.Fields.CycleLengthDays"}}</span><input type="number" min="0.000001" step="0.000001" name="astronomy.cycleLengthDays" value="{{definition.cycleLengthDays}}" {{#unless editable}}disabled{{/unless}}></label>
+                  <label><span>{{localize "CALENDAR_FORGE.Fields.ReferenceWorldTime"}}</span><input type="number" name="astronomy.referenceWorldTime" value="{{definition.referenceWorldTime}}" {{#unless editable}}disabled{{/unless}}></label>
+                </div>
+                <p class="cf-help">{{localize "CALENDAR_FORGE.TemporalProfiles.CycleHelp"}}</p>
+              </section>
+            {{/if}}
+          {{/if}}
+        </div>
+      {{else}}
+        <div class="cf-manager-empty">
+          <i class="fa-solid {{#if isSeasons}}fa-leaf{{else}}{{#if isMoons}}fa-moon{{else}}fa-star-and-crescent{{/if}}{{/if}}"></i>
+          <strong>{{localize "CALENDAR_FORGE.TemporalProfiles.NoDefinitions"}}</strong>
+          <button type="button" data-action="newDefinition">{{localize "CALENDAR_FORGE.TemporalProfiles.CreateFirst"}}</button>
+        </div>
+      {{/if}}
+    </main>
+  </div>
+</div>

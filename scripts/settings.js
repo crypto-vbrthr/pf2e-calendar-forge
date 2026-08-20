@@ -26,7 +26,7 @@ export function registerSettings() {
     scope: "world",
     config: false,
     type: Object,
-    default: { calendars: [], regions: [], anchors: {} }
+    default: { calendars: [], regions: [], seasonProfiles: [], moonProfiles: [], astronomyEvents: [], anchors: {} }
   });
 
   // Legacy 0.1.x anchor settings remain as a migration-safe fallback. New anchors are
@@ -95,9 +95,15 @@ export const SettingsAdapter = {
   activeSeasonProfileId() {
     return game.settings.get(MODULE_ID, SETTINGS.ACTIVE_SEASON_PROFILE);
   },
+  async setActiveSeasonProfileId(id) {
+    return game.settings.set(MODULE_ID, SETTINGS.ACTIVE_SEASON_PROFILE, id ?? "");
+  },
   activeMoonProfileIds() {
     return String(game.settings.get(MODULE_ID, SETTINGS.ACTIVE_MOON_PROFILES) ?? "")
       .split(",").map((value) => value.trim()).filter(Boolean);
+  },
+  async setActiveMoonProfileIds(ids) {
+    return game.settings.set(MODULE_ID, SETTINGS.ACTIVE_MOON_PROFILES, [...(ids ?? [])].join(","));
   },
   legacyAnchor(calendar) {
     const preferredMonth = game.settings.get(MODULE_ID, SETTINGS.ANCHOR_MONTH);

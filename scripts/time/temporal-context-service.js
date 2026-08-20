@@ -7,10 +7,11 @@ function hasOwn(object, key) {
 }
 
 export class TemporalContextService {
-  constructor({ calendarRegistry, seasonService, moonService, eventService, regionService, settings, worldData }) {
+  constructor({ calendarRegistry, seasonService, moonService, astronomyService, eventService, regionService, settings, worldData }) {
     this.calendars = calendarRegistry;
     this.seasons = seasonService;
     this.moons = moonService;
+    this.astronomy = astronomyService;
     this.events = eventService;
     this.regions = regionService;
     this.settings = settings;
@@ -51,14 +52,9 @@ export class TemporalContextService {
   getAnchor(calendar) {
     const stored = this.worldData.getAnchor(calendar.id);
     if (stored) return stored;
-
-    // Preserve the 0.1.x built-in calendar anchor settings when upgrading an existing world.
     if (calendar.id === "earth-gregorian") return this.settings.legacyAnchor(calendar);
     if (calendar.defaultAnchor) return structuredClone(calendar.defaultAnchor);
-
-    // External 0.1.x calendars without their own default anchor used the same world anchor.
     if (calendar.id === this.settings.activeCalendarId()) return this.settings.legacyAnchor(calendar);
-
     return {
       worldTime: 0,
       year: 1,
@@ -99,6 +95,40 @@ export class TemporalContextService {
     const regionId = resolved.region?.id ?? null;
     const events = await this.events.getEventsForDate(date, { calendarId: calendar.id, regionId });
 
+    const dayStartWorldTime = this.toWorldTime({
+      year: date.year,
+      monthId: date.monthId,
+      day: date.day,
+      hour: 0,
+      minute: 0,
+      second: 0
+    }, options);
+    const dayEndWorldTime = dayStartWorldTime + CalendarEngine.secondsPerDay(calendar);
+    const astronomicalEvents = this.astronomy?.getEventsForDate(date, {
+      calendar,
+      regionId,
+      dayStartWorldTime,
+      dayEndWorldTime
+    }) ?? [];
+    const moonTransitions = this.moons.getTransitionsBetween?.(
+      dayStartWorldTime,
+      dayEndWorldTime,
+      calendar,
+      resolved.moonProfileIds,
+      { markersOnly: true }
+    ) ?? [];
+
+    for (const event of astronomicalEvents) {
+      if (event.worldTime != null) {
+        const localDate = this.getDate({ ...options, worldTime: event.worldTime });
+        event.formattedTime = formatClock(localDate, calendar);
+      }
+    }
+    for (const transition of moonTransitions) {
+      const localDate = this.getDate({ ...options, worldTime: transition.worldTime });
+      transition.formattedTime = formatClock(localDate, calendar);
+    }
+
     const secondsPerDay = CalendarEngine.secondsPerDay(calendar);
     const secondsPerHour = CalendarEngine.secondsPerHour(calendar);
     const secondsPerMinute = CalendarEngine.secondsPerMinute(calendar);
@@ -134,6 +164,8 @@ export class TemporalContextService {
       },
       season,
       moons,
+      moonTransitions,
+      astronomicalEvents,
       events,
       profiles: {
         seasonProfileId: resolved.seasonProfileId,

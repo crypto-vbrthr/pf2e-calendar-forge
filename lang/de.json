@@ -7,12 +7,14 @@
       "PreviousMonth": "Vorheriger Monat",
       "NextMonth": "Nächster Monat",
       "ManageCalendars": "Kalender verwalten",
-      "ManageRegions": "Regionale Zeitkontexte verwalten"
+      "ManageRegions": "Regionale Zeitkontexte verwalten",
+      "ManageTemporalProfiles": "Jahreszeiten, Monde und Astronomie verwalten"
     },
     "Sections": {
       "Events": "Ereignisse",
       "Moons": "Monde",
-      "Season": "Jahreszeit"
+      "Season": "Jahreszeit",
+      "Astronomy": "Astronomie"
     },
     "Messages": {
       "NoEvents": "Keine besonderen Ereignisse an diesem Tag.",
@@ -21,7 +23,9 @@
       "InvalidDefinition": "Die Definition ist ungültig:",
       "ConfirmDeleteCalendar": "Diesen benutzerdefinierten Kalender wirklich löschen?",
       "ConfirmDeleteRegion": "Diesen regionalen Zeitkontext wirklich löschen?",
-      "DeleteFailed": "Löschen nicht möglich:"
+      "DeleteFailed": "Löschen nicht möglich:",
+      "NoAstronomy": "Keine astronomischen Ereignisse an diesem Tag.",
+      "ConfirmDeleteTemporalDefinition": "Diese benutzerdefinierte Definition wirklich löschen?"
     },
     "Calendars": {
       "Gregorian": "Irdischer Kalender",
@@ -176,7 +180,19 @@
       "Calendar": "Kalender",
       "TimeOffsetHours": "Zeitversatz in Stunden",
       "SeasonProfile": "Jahreszeitenprofil",
-      "MoonProfiles": "Mondprofile"
+      "MoonProfiles": "Mondprofile",
+      "Icon": "Symbolklasse",
+      "CycleLengthDays": "Zykluslänge in Tagen",
+      "ReferenceWorldTime": "Referenz-Weltzeit",
+      "ReferenceProgress": "Referenzfortschritt (0–1)",
+      "PhaseStart": "Phasenbeginn (0–1)",
+      "CalendarMarker": "Kalendermarker",
+      "EventType": "Ereignisart",
+      "EventMode": "Zeitmodell",
+      "Visibility": "Sichtbarkeit",
+      "Region": "Region",
+      "DurationSeconds": "Dauer in Sekunden",
+      "YearOptional": "Jahr (optional)"
     },
     "CalendarManager": {
       "Title": "Calendar Forge – Kalenderdefinitionen",
@@ -225,6 +241,72 @@
       "ProfileHelp": "Eine Region kann einen anderen Kalender, einen festen lokalen Zeitversatz sowie eigene Saison- und Mondprofile verwenden.",
       "NoRegions": "Noch keine regionalen Zeitkontexte angelegt.",
       "CreateFirst": "Erste Region anlegen"
+    },
+    "TemporalProfiles": {
+      "Title": "Calendar Forge – Jahreszeiten, Monde & Astronomie",
+      "Modes": {
+        "seasons": "Jahreszeiten",
+        "moons": "Monde",
+        "astronomy": "Astronomische Ereignisse"
+      },
+      "WorldDefault": "Im Weltstandard aktiv",
+      "SetDefaultSeason": "Als Weltstandard-Jahreszeitprofil",
+      "AddDefaultMoon": "Im Weltstandard aktivieren",
+      "RemoveDefaultMoon": "Aus Weltstandard entfernen",
+      "Duplicate": "Duplizieren",
+      "Save": "Speichern",
+      "Basics": "Grunddaten",
+      "SeasonBoundaries": "Jahreszeiten und Grenzen",
+      "AddSeason": "Jahreszeit hinzufügen",
+      "SeasonHelp": "Der Beginn jeder Jahreszeit wird als Kalendertag definiert. Der Fortschritt innerhalb der aktiven Jahreszeit wird automatisch berechnet.",
+      "MoonCycle": "Mondzyklus",
+      "MoonHelp": "Der Referenzfortschritt 0 entspricht dem Zyklusanfang. Phasen können beliebig verteilt und einzeln als Kalendermarker markiert werden.",
+      "MoonPhases": "Mondphasen",
+      "AddPhase": "Phase hinzufügen",
+      "ShowMarker": "anzeigen",
+      "AstronomyDetails": "Astronomisches Ereignis",
+      "AstronomyModes": {
+        "date": "Festes oder jährlich wiederkehrendes Datum",
+        "cycle": "Periodischer Zyklus"
+      },
+      "Visibility": {
+        "public": "Öffentlich",
+        "gm": "Nur Spielleitung"
+      },
+      "AllRegions": "Alle Regionen",
+      "AstronomyHelp": "Astronomische Ereignisse können global oder regional, öffentlich oder nur für die Spielleitung sichtbar sein.",
+      "FixedDate": "Datum und Zeitpunkt",
+      "Yearly": "jedes Jahr",
+      "CycleEvent": "Zyklisches Ereignis",
+      "CycleHelp": "Das Ereignis tritt an der Referenz-Weltzeit und danach im angegebenen Tagesintervall erneut auf. Die Foundry-Weltzeit bleibt die einzige Zeitquelle.",
+      "NoDefinitions": "Für diesen Bereich sind noch keine Definitionen vorhanden.",
+      "CreateFirst": "Erste Definition anlegen",
+      "NewSeasonProfile": "Neues Jahreszeitenprofil",
+      "NewSeason": "Neue Jahreszeit",
+      "NewMoonProfile": "Neuer Mond",
+      "NewPhase": "Neue Phase",
+      "NewAstronomyEvent": "Neues astronomisches Ereignis"
+    },
+    "AstronomyTypes": {
+      "solar-eclipse": "Sonnenfinsternis",
+      "lunar-eclipse": "Mondfinsternis",
+      "meteor-shower": "Meteorschauer",
+      "equinox": "Tagundnachtgleiche",
+      "solstice": "Sonnenwende",
+      "conjunction": "Konjunktion",
+      "comet": "Komet",
+      "custom": "Benutzerdefiniert"
+    },
+    "SeasonDetails": {
+      "Next": "Nächste Jahreszeit"
+    },
+    "MoonDetails": {
+      "Next": "Nächste Phase"
+    },
+    "Units": {
+      "Days": "Tage",
+      "DayShort": "T",
+      "HourShort": "Std."
     }
   }
 }

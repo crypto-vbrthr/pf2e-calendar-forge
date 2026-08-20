@@ -6,6 +6,7 @@
       <div class="cf-current-meta">
         {{#if current.season}}<span><i class="fa-solid {{current.season.icon}}"></i>{{current.season.label}}</span>{{/if}}
         {{#each current.moons as |moon|}}<span><i class="fa-solid {{moon.icon}}"></i>{{moon.phaseLabel}}</span>{{/each}}
+        {{#if current.astronomicalEvents.length}}<span><i class="fa-solid fa-star-and-crescent"></i>{{current.astronomicalEvents.length}} {{labels.astronomy}}</span>{{/if}}
       </div>
     </div>
 
@@ -19,6 +20,7 @@
       {{#if isGM}}
         <button type="button" class="cf-icon-button" data-action="manageCalendars" data-tooltip="{{labels.calendars}}"><i class="fa-solid fa-calendar-days"></i></button>
         <button type="button" class="cf-icon-button" data-action="manageRegions" data-tooltip="{{labels.regions}}"><i class="fa-solid fa-map-location-dot"></i></button>
+        <button type="button" class="cf-icon-button" data-action="manageTemporalProfiles" data-tooltip="{{labels.temporalProfiles}}"><i class="fa-solid fa-moon"></i></button>
       {{/if}}
       <div class="cf-nav">
         <button type="button" data-action="previousMonth" data-tooltip="{{labels.previousMonth}}"><i class="fa-solid fa-chevron-left"></i></button>
@@ -61,14 +63,26 @@
           <h3><i class="fa-solid {{selected.season.icon}}"></i> {{labels.season}}</h3>
           <div class="cf-card-row"><span>{{selected.season.label}}</span><span>{{numberFormat selected.season.progress style="percent" maximumFractionDigits=0}}</span></div>
           <div class="cf-progress"><span style="width: {{numberFormat selected.season.progress style='percent' maximumFractionDigits=0}}"></span></div>
+          <div class="cf-detail-line">{{localize "CALENDAR_FORGE.SeasonDetails.Next"}}: {{selected.season.nextSeasonLabel}} · {{selected.season.daysRemaining}} {{localize "CALENDAR_FORGE.Units.Days"}}</div>
         </section>
       {{/if}}
 
       <section class="cf-card">
         <h3><i class="fa-solid fa-moon"></i> {{labels.moons}}</h3>
         {{#each selected.moons as |moon|}}
-          <div class="cf-moon-row"><i class="fa-solid {{moon.icon}}"></i><div><strong>{{moon.label}}</strong><small>{{moon.phaseLabel}}</small></div><span>{{numberFormat moon.illumination style="percent" maximumFractionDigits=0}}</span></div>
+          <div class="cf-moon-row">
+            <i class="fa-solid {{moon.icon}}"></i>
+            <div><strong>{{moon.label}}</strong><small>{{moon.phaseLabel}} · {{numberFormat moon.illumination style="percent" maximumFractionDigits=0}}</small><small>{{localize "CALENDAR_FORGE.MoonDetails.Next"}}: {{moon.nextPhaseLabel}} · {{numberFormat moon.daysUntilNextPhase maximumFractionDigits=1}} {{localize "CALENDAR_FORGE.Units.Days"}}</small></div>
+          </div>
         {{else}}<div class="cf-muted">{{localize "CALENDAR_FORGE.Messages.NoMoons"}}</div>{{/each}}
+        {{#each selected.moonTransitions as |transition|}}
+          <div class="cf-event cf-sub-event"><i class="fa-solid {{transition.icon}}"></i><span>{{transition.formattedTime}} · {{transition.label}}</span></div>
+        {{/each}}
+      </section>
+
+      <section class="cf-card cf-events-card">
+        <h3><i class="fa-solid fa-star-and-crescent"></i> {{labels.astronomy}}</h3>
+        {{#each selected.astronomicalEvents as |event|}}<div class="cf-event"><i class="fa-solid {{event.icon}}"></i><span>{{#if event.formattedTime}}{{event.formattedTime}} · {{/if}}{{event.label}}</span></div>{{else}}<div class="cf-muted">{{labels.noAstronomy}}</div>{{/each}}
       </section>
 
       <section class="cf-card cf-events-card">
@@ -81,11 +95,11 @@
 
   {{#if isGM}}
     <footer class="cf-time-controls">
-      <button type="button" data-action="rewindDay"><i class="fa-solid fa-backward-step"></i> 1d</button>
-      <button type="button" data-action="rewindHour"><i class="fa-solid fa-minus"></i> 1h</button>
+      <button type="button" data-action="rewindDay"><i class="fa-solid fa-backward-step"></i> 1{{localize "CALENDAR_FORGE.Units.DayShort"}}</button>
+      <button type="button" data-action="rewindHour"><i class="fa-solid fa-minus"></i> 1{{localize "CALENDAR_FORGE.Units.HourShort"}}</button>
       <span class="cf-world-time"><i class="fa-solid fa-hourglass-half"></i> {{current.formatted.dateTime}}</span>
-      <button type="button" data-action="advanceHour">1h <i class="fa-solid fa-plus"></i></button>
-      <button type="button" data-action="advanceDay">1d <i class="fa-solid fa-forward-step"></i></button>
+      <button type="button" data-action="advanceHour">1{{localize "CALENDAR_FORGE.Units.HourShort"}} <i class="fa-solid fa-plus"></i></button>
+      <button type="button" data-action="advanceDay">1{{localize "CALENDAR_FORGE.Units.DayShort"}} <i class="fa-solid fa-forward-step"></i></button>
     </footer>
   {{/if}}
 </div>

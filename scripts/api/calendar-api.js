@@ -1,6 +1,6 @@
 import { API_VERSION, SCHEMA_VERSION } from "../constants.js";
 
-export function createCalendarApi({ temporal, providers, registries, events, worldData, settings, openCalendar, openCalendarManager, openRegionManager }) {
+export function createCalendarApi({ temporal, providers, registries, events, worldData, settings, openCalendar, openCalendarManager, openRegionManager, openTemporalProfiles }) {
   return Object.freeze({
     version: API_VERSION,
     schemaVersion: SCHEMA_VERSION,
@@ -23,6 +23,18 @@ export function createCalendarApi({ temporal, providers, registries, events, wor
 
     toWorldTime(date, options = {}) {
       return temporal.toWorldTime(date, options);
+    },
+
+    async getSeason(options = {}) {
+      return (await temporal.getTemporalContext(options)).season;
+    },
+
+    async getMoons(options = {}) {
+      return (await temporal.getTemporalContext(options)).moons;
+    },
+
+    async getAstronomicalEvents(options = {}) {
+      return (await temporal.getTemporalContext(options)).astronomicalEvents;
     },
 
     getAnchor(calendarId = null, options = {}) {
@@ -54,6 +66,11 @@ export function createCalendarApi({ temporal, providers, registries, events, wor
       return openRegionManager();
     },
 
+    openTemporalProfiles(options = {}) {
+      if (!game.user?.isGM) return null;
+      return openTemporalProfiles(options);
+    },
+
     providers,
 
     calendars: Object.freeze({
@@ -71,12 +88,22 @@ export function createCalendarApi({ temporal, providers, registries, events, wor
 
     seasonProfiles: Object.freeze({
       get: (id) => registries.seasons.get(id),
-      list: () => registries.seasons.list()
+      list: () => registries.seasons.list(),
+      defaultId: () => settings.activeSeasonProfileId(),
+      isWorld: (id) => worldData.isWorldSeasonProfile(id)
     }),
 
     moonProfiles: Object.freeze({
       get: (id) => registries.moons.get(id),
-      list: () => registries.moons.list()
+      list: () => registries.moons.list(),
+      defaultIds: () => settings.activeMoonProfileIds(),
+      isWorld: (id) => worldData.isWorldMoonProfile(id)
+    }),
+
+    astronomicalEvents: Object.freeze({
+      get: (id) => registries.astronomy.get(id),
+      list: () => registries.astronomy.list(),
+      isWorld: (id) => worldData.isWorldAstronomyEvent(id)
     }),
 
     registerEventProvider(id, provider) {

@@ -24,6 +24,7 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
       selectDay: CalendarForgeApp.#selectDay,
       manageCalendars: CalendarForgeApp.#manageCalendars,
       manageRegions: CalendarForgeApp.#manageRegions,
+      manageTemporalProfiles: CalendarForgeApp.#manageTemporalProfiles,
       advanceHour: CalendarForgeApp.#advanceHour,
       rewindHour: CalendarForgeApp.#rewindHour,
       advanceDay: CalendarForgeApp.#advanceDay,
@@ -32,9 +33,7 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
   };
 
   static PARTS = {
-    main: {
-      template: `modules/${MODULE_ID}/templates/calendar-app.hbs`
-    }
+    main: { template: `modules/${MODULE_ID}/templates/calendar-app.hbs` }
   };
 
   constructor(service, options = {}) {
@@ -55,7 +54,6 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
     if (this.regionSelection === DEFAULT_CONTEXT) return { ...extra };
     return { ...extra, regionId: this.regionSelection };
   }
-
 
   _onRender(context, options) {
     super._onRender(context, options);
@@ -98,9 +96,7 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
     const weekLength = calendar.week.days.length;
 
     const cells = [];
-    for (let index = 0; index < (firstDate.weekdayIndex ?? 0); index += 1) {
-      cells.push({ empty: true, key: `lead-${index}` });
-    }
+    for (let index = 0; index < (firstDate.weekdayIndex ?? 0); index += 1) cells.push({ empty: true, key: `lead-${index}` });
 
     for (let day = 1; day <= monthDays; day += 1) {
       const worldTime = this.service.temporal.toWorldTime({
@@ -113,22 +109,16 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
       }, this.#contextOptions());
       const dayContext = await this.service.temporal.getTemporalContext(this.#contextOptions({ worldTime }));
       const date = dayContext.raw.date;
-      const seasonChange = this.service.seasons.getChangeForDate(
-        date,
-        calendar,
-        dayContext.profiles.seasonProfileId
-      );
+      const seasonChange = this.service.seasons.getChangeForDate(date, calendar, dayContext.profiles.seasonProfileId);
       const markers = [];
       if (seasonChange) markers.push(seasonChange);
+      for (const transition of dayContext.moonTransitions ?? []) markers.push(transition);
+      for (const event of dayContext.astronomicalEvents ?? []) markers.push(event);
       for (const event of dayContext.events) markers.push(event);
 
-      const isToday = date.year === currentDate.year
-        && date.monthIndex === currentDate.monthIndex
-        && date.day === currentDate.day;
+      const isToday = date.year === currentDate.year && date.monthIndex === currentDate.monthIndex && date.day === currentDate.day;
       const selectedDate = selected.raw.date;
-      const isSelected = date.year === selectedDate.year
-        && date.monthIndex === selectedDate.monthIndex
-        && date.day === selectedDate.day;
+      const isSelected = date.year === selectedDate.year && date.monthIndex === selectedDate.monthIndex && date.day === selectedDate.day;
 
       cells.push({
         empty: false,
@@ -137,20 +127,15 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
         worldTime,
         isToday,
         isSelected,
-        markers: markers.slice(0, 3),
-        extraMarkers: Math.max(0, markers.length - 3),
-        markerTitle: markers.map((marker) => marker.label).filter(Boolean).join("\n")
+        markers: markers.slice(0, 4),
+        extraMarkers: Math.max(0, markers.length - 4),
+        markerTitle: markers.map((marker) => marker.formattedTime ? `${marker.formattedTime} · ${marker.label}` : marker.label).filter(Boolean).join("\n")
       });
     }
 
     while (cells.length % weekLength !== 0) cells.push({ empty: true, key: `trail-${cells.length}` });
 
-    const selectedSeasonChange = this.service.seasons.getChangeForDate(
-      selected.raw.date,
-      calendar,
-      selected.profiles.seasonProfileId
-    );
-
+    const selectedSeasonChange = this.service.seasons.getChangeForDate(selected.raw.date, calendar, selected.profiles.seasonProfileId);
     const regions = [
       {
         id: DEFAULT_CONTEXT,
@@ -160,11 +145,7 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
         selected: this.regionSelection === DEFAULT_CONTEXT
       },
       { id: WORLD_CONTEXT, label: game.i18n.localize("CALENDAR_FORGE.RegionSelector.World"), selected: this.regionSelection === WORLD_CONTEXT },
-      ...this.service.regionService.listDecorated().map((region) => ({
-        id: region.id,
-        label: region.label,
-        selected: this.regionSelection === region.id
-      }))
+      ...this.service.regionService.listDecorated().map((region) => ({ id: region.id, label: region.label, selected: this.regionSelection === region.id }))
     ];
 
     return foundry.utils.mergeObject(context, {
@@ -174,10 +155,7 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
       monthLabel: resolveLabel(month.label, month.id),
       viewYear: this.viewYear,
       weekLength,
-      weekdays: calendar.week.days.map((weekday) => ({
-        id: weekday.id,
-        label: resolveLabel(weekday.shortLabel ?? weekday.label, weekday.id)
-      })),
+      weekdays: calendar.week.days.map((weekday) => ({ id: weekday.id, label: resolveLabel(weekday.shortLabel ?? weekday.label, weekday.id) })),
       cells,
       regions,
       selected: {
@@ -186,6 +164,8 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
         formattedTime: formatClock(selected.raw.date, calendar),
         weekday: resolveLabel(calendar.week.days[selected.raw.date.weekdayIndex]?.label, ""),
         events: selected.events,
+        astronomicalEvents: selected.astronomicalEvents,
+        moonTransitions: selected.moonTransitions,
         seasonChange: selectedSeasonChange
       },
       isGM: game.user?.isGM ?? false,
@@ -194,11 +174,14 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
         previousMonth: game.i18n.localize("CALENDAR_FORGE.Actions.PreviousMonth"),
         nextMonth: game.i18n.localize("CALENDAR_FORGE.Actions.NextMonth"),
         events: game.i18n.localize("CALENDAR_FORGE.Sections.Events"),
+        astronomy: game.i18n.localize("CALENDAR_FORGE.Sections.Astronomy"),
         moons: game.i18n.localize("CALENDAR_FORGE.Sections.Moons"),
         season: game.i18n.localize("CALENDAR_FORGE.Sections.Season"),
         noEvents: game.i18n.localize("CALENDAR_FORGE.Messages.NoEvents"),
+        noAstronomy: game.i18n.localize("CALENDAR_FORGE.Messages.NoAstronomy"),
         calendars: game.i18n.localize("CALENDAR_FORGE.Actions.ManageCalendars"),
-        regions: game.i18n.localize("CALENDAR_FORGE.Actions.ManageRegions")
+        regions: game.i18n.localize("CALENDAR_FORGE.Actions.ManageRegions"),
+        temporalProfiles: game.i18n.localize("CALENDAR_FORGE.Actions.ManageTemporalProfiles")
       }
     }, { inplace: false });
   }
@@ -232,30 +215,22 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
     this.render({ force: true });
   }
 
-
-  static async #manageCalendars() {
-    this.service.openCalendarManager();
-  }
-
-  static async #manageRegions() {
-    this.service.openRegionManager();
-  }
+  static async #manageCalendars() { this.service.openCalendarManager(); }
+  static async #manageRegions() { this.service.openRegionManager(); }
+  static async #manageTemporalProfiles() { this.service.openTemporalProfiles(); }
 
   static async #advanceHour() {
     const calendar = (await this.service.temporal.getTemporalContext(this.#contextOptions())).raw.calendar;
     await game.time.advance(CalendarEngine.secondsPerHour(calendar));
   }
-
   static async #rewindHour() {
     const calendar = (await this.service.temporal.getTemporalContext(this.#contextOptions())).raw.calendar;
     await game.time.advance(-CalendarEngine.secondsPerHour(calendar));
   }
-
   static async #advanceDay() {
     const calendar = (await this.service.temporal.getTemporalContext(this.#contextOptions())).raw.calendar;
     await game.time.advance(CalendarEngine.secondsPerDay(calendar));
   }
-
   static async #rewindDay() {
     const calendar = (await this.service.temporal.getTemporalContext(this.#contextOptions())).raw.calendar;
     await game.time.advance(-CalendarEngine.secondsPerDay(calendar));

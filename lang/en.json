@@ -7,12 +7,14 @@
       "PreviousMonth": "Previous month",
       "NextMonth": "Next month",
       "ManageCalendars": "Manage calendars",
-      "ManageRegions": "Manage regional time contexts"
+      "ManageRegions": "Manage regional time contexts",
+      "ManageTemporalProfiles": "Manage seasons, moons, and astronomy"
     },
     "Sections": {
       "Events": "Events",
       "Moons": "Moons",
-      "Season": "Season"
+      "Season": "Season",
+      "Astronomy": "Astronomy"
     },
     "Messages": {
       "NoEvents": "No special events on this day.",
@@ -21,7 +23,9 @@
       "InvalidDefinition": "The definition is invalid:",
       "ConfirmDeleteCalendar": "Really delete this custom calendar?",
       "ConfirmDeleteRegion": "Really delete this regional time context?",
-      "DeleteFailed": "Could not delete:"
+      "DeleteFailed": "Could not delete:",
+      "NoAstronomy": "No astronomical events on this day.",
+      "ConfirmDeleteTemporalDefinition": "Really delete this custom definition?"
     },
     "Calendars": {
       "Gregorian": "Earth Calendar",
@@ -176,7 +180,19 @@
       "Calendar": "Calendar",
       "TimeOffsetHours": "Time offset in hours",
       "SeasonProfile": "Season profile",
-      "MoonProfiles": "Moon profiles"
+      "MoonProfiles": "Moon profiles",
+      "Icon": "Icon class",
+      "CycleLengthDays": "Cycle length in days",
+      "ReferenceWorldTime": "Reference world time",
+      "ReferenceProgress": "Reference progress (0–1)",
+      "PhaseStart": "Phase start (0–1)",
+      "CalendarMarker": "Calendar marker",
+      "EventType": "Event type",
+      "EventMode": "Time model",
+      "Visibility": "Visibility",
+      "Region": "Region",
+      "DurationSeconds": "Duration in seconds",
+      "YearOptional": "Year (optional)"
     },
     "CalendarManager": {
       "Title": "Calendar Forge – Calendar Definitions",
@@ -225,6 +241,72 @@
       "ProfileHelp": "A region can use another calendar, a fixed local time offset, and its own season and moon profiles.",
       "NoRegions": "No regional time contexts have been created yet.",
       "CreateFirst": "Create first region"
+    },
+    "TemporalProfiles": {
+      "Title": "Calendar Forge – Seasons, Moons & Astronomy",
+      "Modes": {
+        "seasons": "Seasons",
+        "moons": "Moons",
+        "astronomy": "Astronomical Events"
+      },
+      "WorldDefault": "Active in world default",
+      "SetDefaultSeason": "Set as world default season profile",
+      "AddDefaultMoon": "Activate in world default",
+      "RemoveDefaultMoon": "Remove from world default",
+      "Duplicate": "Duplicate",
+      "Save": "Save",
+      "Basics": "Basics",
+      "SeasonBoundaries": "Seasons and boundaries",
+      "AddSeason": "Add season",
+      "SeasonHelp": "Each season begins on a calendar day. Progress through the active season is calculated automatically.",
+      "MoonCycle": "Moon cycle",
+      "MoonHelp": "Reference progress 0 is the start of the cycle. Phases can be placed freely and individually marked for the calendar.",
+      "MoonPhases": "Moon phases",
+      "AddPhase": "Add phase",
+      "ShowMarker": "show",
+      "AstronomyDetails": "Astronomical event",
+      "AstronomyModes": {
+        "date": "Fixed or annually recurring date",
+        "cycle": "Periodic cycle"
+      },
+      "Visibility": {
+        "public": "Public",
+        "gm": "Gamemaster only"
+      },
+      "AllRegions": "All regions",
+      "AstronomyHelp": "Astronomical events can be global or regional, public or GM-only.",
+      "FixedDate": "Date and time",
+      "Yearly": "every year",
+      "CycleEvent": "Cyclic event",
+      "CycleHelp": "The event occurs at the reference world time and repeats at the configured day interval. Foundry world time remains the only clock.",
+      "NoDefinitions": "There are no definitions in this area yet.",
+      "CreateFirst": "Create first definition",
+      "NewSeasonProfile": "New Season Profile",
+      "NewSeason": "New Season",
+      "NewMoonProfile": "New Moon",
+      "NewPhase": "New Phase",
+      "NewAstronomyEvent": "New Astronomical Event"
+    },
+    "AstronomyTypes": {
+      "solar-eclipse": "Solar eclipse",
+      "lunar-eclipse": "Lunar eclipse",
+      "meteor-shower": "Meteor shower",
+      "equinox": "Equinox",
+      "solstice": "Solstice",
+      "conjunction": "Conjunction",
+      "comet": "Comet",
+      "custom": "Custom"
+    },
+    "SeasonDetails": {
+      "Next": "Next season"
+    },
+    "MoonDetails": {
+      "Next": "Next phase"
+    },
+    "Units": {
+      "Days": "days",
+      "DayShort": "d",
+      "HourShort": "h"
     }
   }
 }

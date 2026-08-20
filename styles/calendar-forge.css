@@ -448,3 +448,85 @@ button.cf-day:hover { background: rgba(200, 173, 114, 0.065); }
   .cf-month-table .cf-row-table-head { display: none; }
   .cf-month-table .cf-row-table-row { grid-template-columns: repeat(2, minmax(0,1fr)); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem; }
 }
+
+/* 0.3.0: seasons, moons, and astronomical events */
+.cf-marker-moon-phase { color: #9db9d0; }
+.cf-marker-solar-eclipse { color: #e4bc72; }
+.cf-marker-lunar-eclipse { color: #a8b6cf; }
+.cf-marker-meteor-shower,
+.cf-marker-conjunction,
+.cf-marker-comet,
+.cf-marker-equinox,
+.cf-marker-solstice,
+.cf-marker-custom { color: #b9a7d2; }
+.cf-detail-line {
+  margin-top: 0.45rem;
+  color: var(--cf-muted);
+  font-size: 0.74rem;
+}
+.cf-sub-event {
+  margin-top: 0.55rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  color: var(--cf-muted);
+  font-size: 0.76rem;
+}
+
+.cf-profile-shell {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  min-height: 0;
+}
+.cf-profile-tabs {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--cf-border);
+  background: rgba(0,0,0,0.13);
+}
+.cf-profile-tabs button {
+  min-height: 2rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--cf-muted);
+}
+.cf-profile-tabs button:hover {
+  color: var(--cf-text);
+  background: rgba(255,255,255,0.035);
+}
+.cf-profile-tabs button.is-active {
+  border-color: var(--cf-border);
+  background: rgba(200,173,114,0.10);
+  color: var(--cf-accent);
+}
+.cf-profile-manager-shell { min-height: 0; }
+.cf-season-table .cf-row-table-head,
+.cf-season-table .cf-row-table-row {
+  grid-template-columns: 1fr 1.4fr 1.15fr 70px 1fr 34px;
+}
+.cf-phase-table .cf-row-table-head,
+.cf-phase-table .cf-row-table-row {
+  grid-template-columns: 1fr 1.4fr 90px 1fr 120px 34px;
+}
+.cf-inline-check {
+  display: flex !important;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 !important;
+  color: var(--cf-text) !important;
+}
+.cf-inline-check input { width: auto !important; }
+.cf-inline-check span { margin: 0 !important; font-weight: 400 !important; }
+
+@media (max-width: 1040px) {
+  .cf-season-table .cf-row-table-head,
+  .cf-phase-table .cf-row-table-head { display: none; }
+  .cf-season-table .cf-row-table-row,
+  .cf-phase-table .cf-row-table-row {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    padding-top: 0.45rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+}

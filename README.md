@@ -1,188 +1,226 @@
-# Calendar Forge 0.2.1
+# Calendar Forge 0.3.0
 
-Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock; Calendar Forge translates that absolute time into localized calendar dates and regional temporal contexts.
+Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock. Calendar Forge translates that absolute time into localized calendar dates, regional contexts, seasons, moon states, and astronomical events for both users and other modules.
 
+## 0.3.0 – Seasons, Moons & Astronomical Events
 
-## 0.2.1 – Dropdown Readability Fix
+### Seasons
 
-- Native select controls now explicitly request a dark color scheme.
-- Dropdown option lists use a dark background with high-contrast light text on Windows/Chromium.
-- Selected and disabled options have distinct readable states.
-- Applies to the Calendar Forge main region selector and all calendar/region manager dropdowns.
+- Season profiles are now first-class editable world content.
+- A season profile belongs to a calendar and defines any number of seasons by start month/day.
+- The temporal context exposes:
+  - active season id and localized label;
+  - progress through the season;
+  - elapsed/remaining season days;
+  - next season id and localized label.
+- Season changes appear as markers in the monthly calendar.
+- A season profile can be selected as the world default or overridden by a regional context.
 
-## 0.2.0 – Calendar Definitions & Regional Time Context
+### Moons
 
-### Calendar definitions
+- Moon profiles are now editable world content.
+- Multiple moons may be active simultaneously.
+- Each moon defines:
+  - cycle length in calendar days;
+  - a canonical Foundry-world-time reference point;
+  - reference cycle progress;
+  - freely configurable localized phases;
+  - optional phase markers for the monthly calendar.
+- The temporal context exposes phase, illumination, cycle progress, moon age, next phase, and days until the next phase.
+- Marked phase transitions are calculated from Foundry world time and appear on the exact regional calendar day on which they occur.
+- The day inspector shows phase transitions with their local time.
 
-- Large Calendar Forge monthly view remains the primary calendar UI.
-- New GM calendar-definition manager.
-- Custom calendars can define:
-  - seconds per minute, minutes per hour, and hours per day;
-  - any number of weekdays with long and short names;
-  - any number of months with individual lengths;
-  - optional leap days per month;
-  - no leap rule, Gregorian leap rule, or interval-based leap rule;
-  - era labels;
-  - localized/custom date and date-time formats.
-- Every calendar has an independent world-time anchor. Provider calendars remain read-only, but their world anchor can be overridden for the current world.
-- Provider calendars can be duplicated into editable world calendars.
-- Existing 0.1.x Earth-calendar anchor settings remain a migration-safe fallback.
+### Astronomical events
 
-### Regional temporal context
+Astronomical events are now a dedicated content type. They can be created as:
 
-- New regional-context manager.
-- A region can define:
-  - calendar ID;
-  - fixed local time offset while retaining the same Foundry world time;
-  - season profile;
-  - moon profiles.
-- One region can be selected as the world default.
-- The main calendar can preview the world default, no region, or any registered region.
-- `getTemporalContext({ regionId })`, `getDate({ regionId })`, and `toWorldTime(date, { regionId })` are bidirectional and region-aware.
-- Explicit `regionId: null` bypasses the configured default region.
+- fixed dated events, optionally restricted to one year;
+- annually recurring events when the year is left empty;
+- periodic events driven directly by Foundry world time and a cycle length.
 
-### Provider API
+Supported semantic event types include:
 
-External modules can register prebuilt localized calendar content. All user-facing labels may be Foundry i18n keys.
+- solar eclipse;
+- lunar eclipse;
+- meteor shower;
+- equinox;
+- solstice;
+- conjunction;
+- comet;
+- custom event.
+
+Events may be global or restricted to one region, public or GM-only, and may carry a custom Font Awesome icon. They appear as calendar markers and in a dedicated astronomy card in the day inspector.
+
+Calendar Forge does **not** yet attempt full orbital eclipse simulation. Eclipse entries can be provided by a content module, entered for known dates, or modeled as a configured cycle when a setting has a simple periodic rule.
+
+### Temporal Profiles manager
+
+The main calendar now has a third GM management button alongside calendar and region management. It opens a large management window with three areas:
+
+- Seasons
+- Moons
+- Astronomical Events
+
+Provider definitions are read-only and can be duplicated into editable world-owned definitions. World-owned definitions persist in the Calendar Forge world-data setting.
+
+### Regional integration
+
+Regional contexts continue to select their own season and moon profiles. The region editor now only offers season/moon profiles that are compatible with the selected calendar, and saving a mismatched profile is rejected.
+
+### Calendar markers
+
+A calendar day can now combine markers from several independent sources:
+
+- season changes;
+- marked moon-phase transitions;
+- astronomical events;
+- external/general Calendar Forge events.
+
+Up to four icons are shown directly in the day cell; additional markers use the existing `+N` overflow indicator. Tooltips list all markers and include local event times where available.
+
+## Temporal context additions
+
+```js
+const context = await CalendarForge.api.getTemporalContext({ regionId: "varisia" });
+
+context.season;
+// {
+//   id, label, icon, progress,
+//   daysElapsed, lengthDays, daysRemaining,
+//   nextSeasonId, nextSeasonLabel, profileId
+// }
+
+context.moons;
+// [{
+//   id, label, phase, phaseLabel, icon,
+//   progress, illumination, ageDays, cycleLengthDays,
+//   nextPhase, nextPhaseLabel, daysUntilNextPhase
+// }]
+
+context.moonTransitions;
+// marked phase transitions occurring on the current regional calendar day
+
+context.astronomicalEvents;
+// astronomical events occurring on the current regional calendar day
+```
+
+Convenience calls:
+
+```js
+await CalendarForge.api.getSeason({ regionId: "varisia" });
+await CalendarForge.api.getMoons({ regionId: "varisia" });
+await CalendarForge.api.getAstronomicalEvents({ regionId: "varisia" });
+```
+
+Registries:
+
+```js
+CalendarForge.api.seasonProfiles.list();
+CalendarForge.api.moonProfiles.list();
+CalendarForge.api.astronomicalEvents.list();
+```
+
+## Provider API additions
+
+External content modules may now register all three new content types directly:
 
 ```js
 Hooks.once("calendarForgeReady", (api) => {
   api.providers.register({
-    id: "calendar-forge-golarion",
-    schemaVersion: 1,
+    id: "my-world-calendar-pack",
+    schemaVersion: 2,
     contentVersion: "1.0.0",
-    calendars: [
-      {
-        id: "golarion-ar",
-        label: { i18n: "CF_GOLARION.Calendar.Name" },
-        era: { i18n: "CF_GOLARION.Calendar.Era" },
-        time: { secondsPerMinute: 60, minutesPerHour: 60, hoursPerDay: 24 },
-        week: {
-          days: [
-            {
-              id: "moonday",
-              label: { i18n: "CF_GOLARION.Weekdays.Moonday" },
-              shortLabel: { i18n: "CF_GOLARION.Weekdays.MoondayShort" }
-            }
-          ]
-        },
-        months: [
-          {
-            id: "abadius",
-            days: 31,
-            label: { i18n: "CF_GOLARION.Months.Abadius" },
-            shortLabel: { i18n: "CF_GOLARION.Months.AbadiusShort" }
-          }
-        ],
-        leapYear: { type: "none" },
-        defaultAnchor: {
-          worldTime: 0,
-          year: 4724,
-          monthId: "abadius",
+
+    calendars: [/* ... */],
+
+    seasonProfiles: [{
+      id: "temperate-seasons",
+      calendarId: "my-calendar",
+      label: { i18n: "MY_PACK.Seasons.Name" },
+      seasons: [
+        {
+          id: "spring",
+          monthId: "first-month",
           day: 1,
-          hour: 0,
-          minute: 0,
-          second: 0,
-          weekdayIndex: 0
-        },
-        dateFormats: {
-          date: { i18n: "CF_GOLARION.Formats.Date" },
-          dateTime: { i18n: "CF_GOLARION.Formats.DateTime" }
+          label: { i18n: "MY_PACK.Seasons.Spring" },
+          icon: "fa-seedling"
         }
+      ]
+    }],
+
+    moonProfiles: [{
+      id: "silver-moon",
+      calendarId: "my-calendar",
+      label: { i18n: "MY_PACK.Moons.Silver" },
+      cycleLengthDays: 28,
+      referenceWorldTime: 0,
+      referenceProgress: 0,
+      phases: [
+        {
+          id: "full",
+          start: 0.5,
+          label: { i18n: "MY_PACK.MoonPhases.Full" },
+          icon: "fa-circle",
+          marker: true
+        }
+      ]
+    }],
+
+    astronomyEvents: [{
+      id: "great-eclipse",
+      calendarId: "my-calendar",
+      regionId: "my-region",
+      label: { i18n: "MY_PACK.Astronomy.GreatEclipse" },
+      type: "solar-eclipse",
+      mode: "date",
+      date: {
+        year: 812,
+        monthId: "first-month",
+        day: 17,
+        hour: 11,
+        minute: 20
       }
-    ],
-    regionProfiles: [
-      {
-        id: "varisia",
-        label: { i18n: "CF_GOLARION.Regions.Varisia" },
-        calendarId: "golarion-ar",
-        timeOffsetSeconds: -7200,
-        seasonProfileId: "varisia-seasons",
-        moonProfileIds: ["golarion-moon"]
-      }
-    ]
+    }]
   });
 });
 ```
 
-Provider definitions are read-only. A GM can duplicate a provider calendar or region into a world-owned editable definition.
-
-## Public API highlights
-
-```js
-await CalendarForge.api.getTemporalContext();
-await CalendarForge.api.getTemporalContext({ regionId: "varisia" });
-await CalendarForge.api.getTemporalContext({ regionId: null });
-
-CalendarForge.api.getDate({ regionId: "varisia" });
-CalendarForge.api.toWorldTime(date, { regionId: "varisia" });
-CalendarForge.api.getAnchor("golarion-ar");
-
-CalendarForge.api.calendars.list();
-CalendarForge.api.regions.list();
-CalendarForge.api.regions.defaultId();
-CalendarForge.api.providers.register(provider);
-
-CalendarForge.api.open();
-CalendarForge.api.openCalendarManager();
-CalendarForge.api.openRegionManager();
-```
-
-## Temporal-context shape
-
-A regional context preserves canonical world time and exposes the translated local world-time value separately:
-
-```js
-{
-  worldTime: 100000,          // canonical Foundry time
-  localWorldTime: 92800,      // worldTime + regional offset
-  regionId: "varisia",
-  region: {
-    id: "varisia",
-    label: "Varisia",
-    timeOffsetSeconds: -7200
-  },
-  calendar: { /* date fields */ },
-  time: {
-    hour: 12,
-    minute: 30,
-    second: 0,
-    dayProgress: 0.52,
-    offsetSeconds: -7200
-  },
-  season: { /* optional */ },
-  moons: [],
-  events: [],
-  profiles: {
-    seasonProfileId: "varisia-seasons",
-    moonProfileIds: ["golarion-moon"]
-  },
-  formatted: { /* localized date/time strings */ }
-}
-```
+All labels can use Foundry i18n keys. Provider content remains read-only inside Calendar Forge and can be duplicated for world-specific changes.
 
 ## Hooks
 
-- `calendarForgeReady(api)`
-- `calendarForgeProviderRegistered(providerId)`
-- `calendarForgeDefinitionsChanged()`
-- `calendarForgeTimeChanged(context, change)`
-- `calendarForgeContextChanged(context, change)`
-- `calendarForgeCalendarChanged(context, change)`
-- `calendarForgeRegionChanged(context, change)`
-- `calendarForgeDayChanged(context, change)`
-- `calendarForgeMonthChanged(context, change)`
-- `calendarForgeYearChanged(context, change)`
-- `calendarForgeSeasonChanged(context, change)`
-- `calendarForgeMoonPhaseChanged(context, change)`
+Existing hooks remain available. 0.3.0 additionally exposes:
 
-## Still deliberately deferred
+- `calendarForgeMoonTransitionsCrossed(transitions, context, change)`
+- `calendarForgeAstronomicalEventsCurrent(events, context, change)`
 
-- Holiday editor and complex recurrence rules.
-- Historical chronicle editor.
-- Solar/lunar eclipse calculation.
-- Rich astronomy editor and multiple-orbit modelling.
-- Campaign Forge bridge.
+The existing `calendarForgeSeasonChanged` and `calendarForgeMoonPhaseChanged` hooks continue to report changes in the current resolved context.
+
+## Persistence and migration
+
+The world-data object now supports:
+
+```js
+{
+  calendars: [],
+  regions: [],
+  seasonProfiles: [],
+  moonProfiles: [],
+  astronomyEvents: [],
+  anchors: {}
+}
+```
+
+0.2.x world data is loaded migration-safely; missing new arrays are initialized automatically. No second running clock is introduced.
+
+## Development status
+
+0.3.0 includes automated coverage for calendar arithmetic, regional time translation, localization parity, season progress, moon phase calculations and transitions, astronomical fixed/cyclic events, validators, provider content registration, launcher integration, and dropdown styling.
+
+Still deliberately deferred:
+
+- full orbital/positional astronomy and physically derived eclipse simulation;
+- holiday editor and complex holiday recurrence rules;
+- historical chronicle editor;
+- Campaign Forge bridge;
 - Weather Forge integration changes.
-
-The schemas and provider registries remain designed for those later layers without introducing a second clock.
