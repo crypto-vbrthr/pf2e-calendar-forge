@@ -8,7 +8,8 @@
       "NextMonth": "Next month",
       "ManageCalendars": "Manage calendars",
       "ManageRegions": "Manage regional time contexts",
-      "ManageTemporalProfiles": "Manage seasons, moons, and astronomy"
+      "ManageTemporalProfiles": "Manage seasons, moons, and astronomy",
+      "OpenChronicle": "Open chronicle, holidays, and historical events"
     },
     "Sections": {
       "Events": "Events",
@@ -307,6 +308,86 @@
       "Days": "days",
       "DayShort": "d",
       "HourShort": "h"
+    },
+    "Chronicle": {
+      "Title": "Calendar Forge – Chronicle",
+      "Tabs": {
+        "Chronicle": "Chronicle",
+        "Holidays": "Holidays",
+        "Historical": "History"
+      },
+      "Heading": "Chronicle",
+      "Region": "Region / time context",
+      "FromYear": "From year",
+      "ToYear": "To year",
+      "Type": "Event type",
+      "Search": "Search",
+      "SearchPlaceholder": "Name, description, or category …",
+      "Apply": "Apply",
+      "EventTypes": {
+        "all": "All",
+        "holiday": "Holidays",
+        "historical": "Historical events",
+        "external": "External events",
+        "campaign": "Campaign events"
+      },
+      "Sources": {
+        "Holiday": "Holiday",
+        "Historical": "Historical",
+        "Campaign": "Campaign",
+        "External": "External"
+      },
+      "NoEntries": "There are no visible entries for the selected range and filters.",
+      "Holidays": "Holidays",
+      "HistoricalEvents": "Historical events",
+      "New": "New",
+      "Duplicate": "Duplicate as world definition",
+      "Save": "Save",
+      "Delete": "Delete",
+      "DeleteTitle": "Calendar Forge",
+      "ConfirmDelete": "Delete this custom definition?",
+      "BasicData": "Basic data",
+      "Name": "Name",
+      "Calendar": "Calendar",
+      "Visibility": "Visibility",
+      "Icon": "Icon",
+      "Category": "Category",
+      "DocumentUuid": "Foundry document UUID",
+      "Description": "Description",
+      "HolidayTiming": "Holiday rule",
+      "RecurrenceLabel": "Recurrence",
+      "Recurrence": {
+        "yearly": "Yearly",
+        "once": "One-time"
+      },
+      "Year": "Year",
+      "Month": "Month",
+      "Day": "Day",
+      "Duration": "Duration in days",
+      "HolidayHelp": "Holidays can be global or regional, one-time or yearly. Multi-day festivals automatically continue across month and year boundaries.",
+      "HistoricalTiming": "Historical time",
+      "PrecisionLabel": "Time precision",
+      "Precision": {
+        "year": "Year",
+        "month": "Month",
+        "day": "Day",
+        "hour": "Hour",
+        "minute": "Minute",
+        "second": "Second"
+      },
+      "Hour": "Hour",
+      "Minute": "Minute",
+      "Second": "Second",
+      "HistoricalHelp": "Precision controls how much of the timestamp is actually known. A year-precision event does not receive an invented month or day.",
+      "AllRegions": "Global / all regions",
+      "NewHoliday": "New holiday",
+      "NewHistoricalEvent": "New historical event",
+      "NoDefinitions": "There are no definitions in this section yet.",
+      "OpenDocument": "Open linked document",
+      "DocumentNotFound": "The linked Foundry document could not be opened.",
+      "DurationDays": "{days} days",
+      "FestivalDay": "Day {day} of {duration}",
+      "HourSuffix": "h"
     }
   }
 }

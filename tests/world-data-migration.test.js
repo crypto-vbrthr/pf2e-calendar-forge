@@ -26,10 +26,14 @@ test("0.2.x world data loads with empty 0.3 arrays", async () => {
   const seasons = new DefinitionRegistry("season");
   const moons = new DefinitionRegistry("moon");
   const astronomy = new DefinitionRegistry("astronomy");
-  const repo = new WorldDataRepository({ calendarRegistry: calendars, regionRegistry: regions, seasonRegistry: seasons, moonRegistry: moons, astronomyRegistry: astronomy });
+  const holidays = new DefinitionRegistry("holiday");
+  const historical = new DefinitionRegistry("historical");
+  const repo = new WorldDataRepository({ calendarRegistry: calendars, regionRegistry: regions, seasonRegistry: seasons, moonRegistry: moons, astronomyRegistry: astronomy, holidayRegistry: holidays, historicalRegistry: historical });
   await repo.load();
   assert.equal(calendars.has("old-world-calendar"), true);
   assert.deepEqual(repo.data.seasonProfiles, []);
   assert.deepEqual(repo.data.moonProfiles, []);
   assert.deepEqual(repo.data.astronomyEvents, []);
+  assert.deepEqual(repo.data.holidays, []);
+  assert.deepEqual(repo.data.historicalEvents, []);
 });

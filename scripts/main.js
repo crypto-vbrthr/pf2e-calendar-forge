@@ -15,6 +15,7 @@ import { CalendarForgeApp } from "./ui/calendar-app.js";
 import { CalendarManagerApp } from "./ui/calendar-manager-app.js";
 import { RegionManagerApp } from "./ui/region-manager-app.js";
 import { TemporalProfilesApp } from "./ui/temporal-profiles-app.js";
+import { ChronicleApp } from "./ui/chronicle-app.js";
 import { installRegionLauncher } from "./ui/region-launcher.js";
 import { validateCalendarDefinition, validateMoonProfile, validateSeasonProfile } from "./validation/definition-validator.js";
 
@@ -23,13 +24,16 @@ const registries = {
   seasons: new DefinitionRegistry("season profile"),
   moons: new DefinitionRegistry("moon profile"),
   regions: new DefinitionRegistry("region profile"),
-  astronomy: new DefinitionRegistry("astronomical event")
+  astronomy: new DefinitionRegistry("astronomical event"),
+  holidays: new DefinitionRegistry("holiday"),
+  historical: new DefinitionRegistry("historical event")
 };
-const eventService = new EventService();
+const eventService = new EventService({ holidayRegistry: registries.holidays, historicalRegistry: registries.historical });
 let app = null;
 let calendarManager = null;
 let regionManager = null;
 let temporalProfiles = null;
+let chronicle = null;
 let api = null;
 let temporal = null;
 let services = null;
@@ -82,6 +86,21 @@ function openTemporalProfiles(options = {}) {
   return temporalProfiles;
 }
 
+function openChronicle(options = {}) {
+  if (!chronicle) chronicle = new ChronicleApp(services, options);
+  else {
+    if (options.mode && options.mode !== chronicle.mode) {
+      chronicle.mode = options.mode;
+      chronicle.selectedId = null;
+      chronicle.draft = null;
+      chronicle.isNew = false;
+    }
+    if (Object.prototype.hasOwnProperty.call(options, "regionId")) chronicle.regionSelection = options.regionId === null ? "__world__" : (options.regionId ?? "__default__");
+  }
+  chronicle.render({ force: true });
+  return chronicle;
+}
+
 async function recomputeContext(reason = "configuration") {
   if (!temporal || !isReady) return;
   const previous = lastContext;
@@ -95,6 +114,7 @@ async function recomputeContext(reason = "configuration") {
   if (calendarManager?.rendered) calendarManager.render({ force: true });
   if (regionManager?.rendered) regionManager.render({ force: true });
   if (temporalProfiles?.rendered) temporalProfiles.render({ force: true });
+  if (chronicle?.rendered) chronicle.render({ force: true });
 }
 
 Hooks.once("init", () => {
@@ -110,7 +130,9 @@ Hooks.once("init", () => {
     regionRegistry: registries.regions,
     seasonRegistry: registries.seasons,
     moonRegistry: registries.moons,
-    astronomyRegistry: registries.astronomy
+    astronomyRegistry: registries.astronomy,
+    holidayRegistry: registries.holidays,
+    historicalRegistry: registries.historical
   });
   temporal = new TemporalContextService({
     calendarRegistry: registries.calendars,
@@ -129,6 +151,8 @@ Hooks.once("init", () => {
     moonRegistry: registries.moons,
     regionRegistry: registries.regions,
     astronomyRegistry: registries.astronomy,
+    holidayRegistry: registries.holidays,
+    historicalRegistry: registries.historical,
     eventService
   });
 
@@ -144,7 +168,8 @@ Hooks.once("init", () => {
     registries,
     openCalendarManager,
     openRegionManager,
-    openTemporalProfiles
+    openTemporalProfiles,
+    openChronicle
   };
 
   api = createCalendarApi({
@@ -157,7 +182,8 @@ Hooks.once("init", () => {
     openCalendar,
     openCalendarManager,
     openRegionManager,
-    openTemporalProfiles
+    openTemporalProfiles,
+    openChronicle
   });
 
   const module = game.modules.get(MODULE_ID);
@@ -194,6 +220,20 @@ Hooks.on("updateWorldTime", async (worldTime, delta, options, userId) => {
     if (previous.calendar.day !== current.calendar.day || previous.calendar.monthId !== current.calendar.monthId || previous.calendar.year !== current.calendar.year) Hooks.callAll("calendarForgeDayChanged", current, change);
     if (previous.season?.id !== current.season?.id) Hooks.callAll("calendarForgeSeasonChanged", current, change);
 
+    const eventKey = (event) => `${event.sourceType ?? event.type ?? "event"}:${event.id ?? event.label}`;
+    const beforeEvents = new Map((previous.events ?? []).map((event) => [eventKey(event), event]));
+    const currentEvents = new Map((current.events ?? []).map((event) => [eventKey(event), event]));
+    const startedEvents = [...currentEvents.entries()].filter(([key]) => !beforeEvents.has(key)).map(([, event]) => event);
+    const endedEvents = [...beforeEvents.entries()].filter(([key]) => !currentEvents.has(key)).map(([, event]) => event);
+    if (startedEvents.length || endedEvents.length) {
+      const eventChange = { ...change, started: startedEvents, ended: endedEvents };
+      Hooks.callAll("calendarForgeEventsChanged", current.events ?? [], current, eventChange);
+      const startedHolidays = startedEvents.filter((event) => event.type === "holiday");
+      const endedHolidays = endedEvents.filter((event) => event.type === "holiday");
+      if (startedHolidays.length) Hooks.callAll("calendarForgeHolidaysStarted", startedHolidays, current, eventChange);
+      if (endedHolidays.length) Hooks.callAll("calendarForgeHolidaysEnded", endedHolidays, current, eventChange);
+    }
+
     const beforeMoons = new Map((previous.moons ?? []).map((moon) => [moon.id, moon.phase]));
     const moonChanged = (current.moons ?? []).some((moon) => beforeMoons.get(moon.id) !== moon.phase);
     if (moonChanged) Hooks.callAll("calendarForgeMoonPhaseChanged", current, change);
@@ -211,4 +251,5 @@ Hooks.on("updateWorldTime", async (worldTime, delta, options, userId) => {
 
   lastContext = current;
   if (app?.rendered) app.render({ force: true });
+  if (chronicle?.rendered) chronicle.render({ force: true });
 });

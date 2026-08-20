@@ -1,200 +1,175 @@
-# Calendar Forge 0.3.0
+# Calendar Forge 0.4.0
 
-Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock. Calendar Forge translates that absolute time into localized calendar dates, regional contexts, seasons, moon states, and astronomical events for both users and other modules.
+Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock. Calendar Forge translates that absolute time into localized calendar dates, regional contexts, seasons, moon states, astronomy, holidays, and campaign/world chronology for users and other modules.
 
-## 0.3.0 – Seasons, Moons & Astronomical Events
+## 0.4.0 – Holidays, Historical Events & Chronicle
 
-### Seasons
+### Holidays
 
-- Season profiles are now first-class editable world content.
-- A season profile belongs to a calendar and defines any number of seasons by start month/day.
-- The temporal context exposes:
-  - active season id and localized label;
-  - progress through the season;
-  - elapsed/remaining season days;
-  - next season id and localized label.
-- Season changes appear as markers in the monthly calendar.
-- A season profile can be selected as the world default or overridden by a regional context.
+Holidays are now first-class Calendar Forge content.
 
-### Moons
+A holiday can be:
 
-- Moon profiles are now editable world content.
-- Multiple moons may be active simultaneously.
-- Each moon defines:
-  - cycle length in calendar days;
-  - a canonical Foundry-world-time reference point;
-  - reference cycle progress;
-  - freely configurable localized phases;
-  - optional phase markers for the monthly calendar.
-- The temporal context exposes phase, illumination, cycle progress, moon age, next phase, and days until the next phase.
-- Marked phase transitions are calculated from Foundry world time and appear on the exact regional calendar day on which they occur.
-- The day inspector shows phase transitions with their local time.
+- global or restricted to a region;
+- public or GM-only;
+- annually recurring or tied to one specific year;
+- one or several calendar days long;
+- localized by provider modules;
+- categorized and assigned a custom Font Awesome icon;
+- linked to a Foundry document by UUID.
 
-### Astronomical events
+Multi-day festivals are evaluated using calendar arithmetic, so they can continue correctly across month and year boundaries. A holiday that begins on the final day of a year can therefore remain active on the first days of the following year without any separate running calendar clock.
 
-Astronomical events are now a dedicated content type. They can be created as:
+### Historical events
 
-- fixed dated events, optionally restricted to one year;
-- annually recurring events when the year is left empty;
-- periodic events driven directly by Foundry world time and a cycle length.
+Historical events are separate from holidays and support explicit time precision:
 
-Supported semantic event types include:
+- year;
+- month;
+- day;
+- hour;
+- minute;
+- second.
 
-- solar eclipse;
-- lunar eclipse;
-- meteor shower;
-- equinox;
-- solstice;
-- conjunction;
-- comet;
-- custom event.
+Precision is semantic, not cosmetic. A historical event known only to have happened in a certain year remains a year-level entry and does not receive an invented month, day, or midnight timestamp. Day-or-better precision events also appear as markers on the monthly calendar.
 
-Events may be global or restricted to one region, public or GM-only, and may carry a custom Font Awesome icon. They appear as calendar markers and in a dedicated astronomy card in the day inspector.
+Historical events may be global/regional, public/GM-only, localized, categorized, iconized, and linked to Foundry documents.
 
-Calendar Forge does **not** yet attempt full orbital eclipse simulation. Eclipse entries can be provided by a content module, entered for known dates, or modeled as a configured cycle when a setting has a simple periodic rule.
+### Chronicle
 
-### Temporal Profiles manager
+The main Calendar Forge window now has a Chronicle button. The Chronicle is a large, searchable time-line view that can be used while the calendar itself remains closed most of the session.
 
-The main calendar now has a third GM management button alongside calendar and region management. It opens a large management window with three areas:
+Filters include:
 
-- Seasons
-- Moons
-- Astronomical Events
+- regional/world time context;
+- start and end year;
+- holidays;
+- historical events;
+- Campaign Forge/provider events;
+- other external events;
+- text search across names, descriptions, and categories.
 
-Provider definitions are read-only and can be duplicated into editable world-owned definitions. World-owned definitions persist in the Calendar Forge world-data setting.
+Yearly holidays are expanded into concrete occurrences inside the requested range. Historical entries retain their declared precision.
 
-### Regional integration
+GM users also receive Holidays and History management tabs in the same window. Provider content is read-only and can be duplicated into a world-owned definition before editing.
 
-Regional contexts continue to select their own season and moon profiles. The region editor now only offers season/moon profiles that are compatible with the selected calendar, and saving a mismatched profile is rejected.
+### Monthly calendar integration
 
-### Calendar markers
-
-A calendar day can now combine markers from several independent sources:
+Calendar day markers can now include:
 
 - season changes;
-- marked moon-phase transitions;
+- moon-phase transitions;
 - astronomical events;
-- external/general Calendar Forge events.
+- holidays;
+- historical events;
+- Campaign Forge or other external provider events.
 
-Up to four icons are shown directly in the day cell; additional markers use the existing `+N` overflow indicator. Tooltips list all markers and include local event times where available.
+The day inspector shows holiday/festival progress, historical event time where known, descriptions, and optional Foundry-document links.
 
-## Temporal context additions
+## Event provider contract
 
-```js
-const context = await CalendarForge.api.getTemporalContext({ regionId: "varisia" });
-
-context.season;
-// {
-//   id, label, icon, progress,
-//   daysElapsed, lengthDays, daysRemaining,
-//   nextSeasonId, nextSeasonLabel, profileId
-// }
-
-context.moons;
-// [{
-//   id, label, phase, phaseLabel, icon,
-//   progress, illumination, ageDays, cycleLengthDays,
-//   nextPhase, nextPhaseLabel, daysUntilNextPhase
-// }]
-
-context.moonTransitions;
-// marked phase transitions occurring on the current regional calendar day
-
-context.astronomicalEvents;
-// astronomical events occurring on the current regional calendar day
-```
-
-Convenience calls:
+The existing event-provider mechanism is extended for Chronicle use. This is intended for modules such as Campaign Forge that own their event data and should not duplicate it into Calendar Forge.
 
 ```js
-await CalendarForge.api.getSeason({ regionId: "varisia" });
-await CalendarForge.api.getMoons({ regionId: "varisia" });
-await CalendarForge.api.getAstronomicalEvents({ regionId: "varisia" });
+CalendarForge.api.registerEventProvider("campaign-forge", async (request) => {
+  if (request.type === "date") {
+    // Return events relevant to request.date / request.context.
+    // Canonical Foundry worldTime may be supplied and Calendar Forge
+    // will filter it against the regional calendar day.
+    return [];
+  }
+
+  if (request.type === "chronicle") {
+    // request.range: { fromYear, toYear }
+    // request.context.rangeStartWorldTime / rangeEndWorldTime are canonical
+    // Foundry world-time bounds for modules that store timestamps that way.
+    return [{
+      id: "quest-complete",
+      sourceType: "campaign",
+      label: { value: "The northern gate was reclaimed" },
+      worldTime: 18422311,
+      precision: "second",
+      journalUuid: "JournalEntry.example"
+    }];
+  }
+
+  return [];
+});
 ```
 
-Registries:
+Chronicle providers may return either a calendar `date` plus `precision`, or canonical `worldTime`. The latter is especially useful for Campaign Forge because Calendar Forge converts it into the currently requested regional calendar context.
 
-```js
-CalendarForge.api.seasonProfiles.list();
-CalendarForge.api.moonProfiles.list();
-CalendarForge.api.astronomicalEvents.list();
-```
+## Provider content additions
 
-## Provider API additions
-
-External content modules may now register all three new content types directly:
+Calendar content modules can now register holidays and historical events alongside calendars, regions, seasons, moons, and astronomy:
 
 ```js
 Hooks.once("calendarForgeReady", (api) => {
   api.providers.register({
-    id: "my-world-calendar-pack",
-    schemaVersion: 2,
+    id: "my-setting-calendar-pack",
+    schemaVersion: 3,
     contentVersion: "1.0.0",
 
     calendars: [/* ... */],
+    regionProfiles: [/* ... */],
 
-    seasonProfiles: [{
-      id: "temperate-seasons",
-      calendarId: "my-calendar",
-      label: { i18n: "MY_PACK.Seasons.Name" },
-      seasons: [
-        {
-          id: "spring",
-          monthId: "first-month",
-          day: 1,
-          label: { i18n: "MY_PACK.Seasons.Spring" },
-          icon: "fa-seedling"
-        }
-      ]
-    }],
-
-    moonProfiles: [{
-      id: "silver-moon",
-      calendarId: "my-calendar",
-      label: { i18n: "MY_PACK.Moons.Silver" },
-      cycleLengthDays: 28,
-      referenceWorldTime: 0,
-      referenceProgress: 0,
-      phases: [
-        {
-          id: "full",
-          start: 0.5,
-          label: { i18n: "MY_PACK.MoonPhases.Full" },
-          icon: "fa-circle",
-          marker: true
-        }
-      ]
-    }],
-
-    astronomyEvents: [{
-      id: "great-eclipse",
+    holidays: [{
+      id: "harvest-festival",
       calendarId: "my-calendar",
       regionId: "my-region",
-      label: { i18n: "MY_PACK.Astronomy.GreatEclipse" },
-      type: "solar-eclipse",
-      mode: "date",
-      date: {
-        year: 812,
-        monthId: "first-month",
-        day: 17,
-        hour: 11,
-        minute: 20
-      }
+      label: { i18n: "MY_PACK.Holidays.HarvestFestival.Name" },
+      description: { i18n: "MY_PACK.Holidays.HarvestFestival.Description" },
+      recurrence: { type: "yearly", monthId: "harvest", day: 17 },
+      durationDays: 3,
+      visibility: "public",
+      icon: "fa-wheat-awn"
+    }],
+
+    historicalEvents: [{
+      id: "founding-of-the-city",
+      calendarId: "my-calendar",
+      label: { i18n: "MY_PACK.History.CityFounded.Name" },
+      description: { i18n: "MY_PACK.History.CityFounded.Description" },
+      precision: "year",
+      date: { year: 812 },
+      visibility: "public",
+      icon: "fa-landmark"
     }]
   });
 });
 ```
 
-All labels can use Foundry i18n keys. Provider content remains read-only inside Calendar Forge and can be duplicated for world-specific changes.
+Labels, descriptions, categories, calendar/month/weekday names, seasons, moon names and phases continue to support normal Foundry i18n keys.
+
+## API additions
+
+```js
+await CalendarForge.api.getEventsForDate({ regionId: "varisia" });
+
+await CalendarForge.api.getChronicle({
+  regionId: "varisia",
+  fromYear: 4700,
+  toYear: 4724,
+  eventType: "all", // all | holiday | historical | campaign | external
+  query: "war"
+});
+
+CalendarForge.api.holidays.list();
+CalendarForge.api.historicalEvents.list();
+CalendarForge.api.openChronicle({ regionId: "varisia" });
+```
+
+`getTemporalContext()` continues to expose `events` for the currently resolved regional calendar day.
 
 ## Hooks
 
-Existing hooks remain available. 0.3.0 additionally exposes:
+0.4.0 adds event-state hooks driven by changes to Foundry world time:
 
-- `calendarForgeMoonTransitionsCrossed(transitions, context, change)`
-- `calendarForgeAstronomicalEventsCurrent(events, context, change)`
+- `calendarForgeEventsChanged(events, context, change)`
+- `calendarForgeHolidaysStarted(holidays, context, change)`
+- `calendarForgeHolidaysEnded(holidays, context, change)`
 
-The existing `calendarForgeSeasonChanged` and `calendarForgeMoonPhaseChanged` hooks continue to report changes in the current resolved context.
+Existing calendar, day, month, year, region, season, moon, and astronomy hooks remain available.
 
 ## Persistence and migration
 
@@ -207,20 +182,26 @@ The world-data object now supports:
   seasonProfiles: [],
   moonProfiles: [],
   astronomyEvents: [],
+  holidays: [],
+  historicalEvents: [],
   anchors: {}
 }
 ```
 
-0.2.x world data is loaded migration-safely; missing new arrays are initialized automatically. No second running clock is introduced.
+Older 0.2.x/0.3.x world data remains migration-safe; missing arrays are initialized automatically. No second running clock is introduced.
+
+## Core design rule
+
+Calendar Forge never owns a second advancing time value. Time-sensitive Foundry effects, Affliction Forge, and other systems continue to age from Foundry world time. Calendar Forge only answers what that instant means in a configured calendar and regional context.
 
 ## Development status
 
-0.3.0 includes automated coverage for calendar arithmetic, regional time translation, localization parity, season progress, moon phase calculations and transitions, astronomical fixed/cyclic events, validators, provider content registration, launcher integration, and dropdown styling.
+0.4.0 automated coverage includes calendar arithmetic, regional translation, season/moon/astronomy behavior, localization parity, holiday duration across year boundaries, historical precision, Chronicle expansion/filtering, canonical-world-time provider entries, provider content registration, migration safety, launcher integration, and dropdown readability.
 
 Still deliberately deferred:
 
-- full orbital/positional astronomy and physically derived eclipse simulation;
-- holiday editor and complex holiday recurrence rules;
-- historical chronicle editor;
-- Campaign Forge bridge;
-- Weather Forge integration changes.
+- physically derived orbital eclipse simulation;
+- complex rule expressions such as “first full moon after the equinox” for holidays;
+- direct Campaign Forge implementation changes;
+- Weather Forge integration changes;
+- a setting-specific content pack such as Calendar Forge: Golarion.

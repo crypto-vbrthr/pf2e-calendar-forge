@@ -20,12 +20,16 @@ function build() {
   const moons = new DefinitionRegistry("moon");
   const regions = new DefinitionRegistry("region");
   const astronomy = new DefinitionRegistry("astronomy");
+  const holidays = new DefinitionRegistry("holiday");
+  const historical = new DefinitionRegistry("historical");
   const events = { register() {} };
   return {
     calendars,
     regions,
     astronomy,
-    api: new ProviderApi({ calendarRegistry: calendars, seasonRegistry: seasons, moonRegistry: moons, regionRegistry: regions, astronomyRegistry: astronomy, eventService: events })
+    holidays,
+    historical,
+    api: new ProviderApi({ calendarRegistry: calendars, seasonRegistry: seasons, moonRegistry: moons, regionRegistry: regions, astronomyRegistry: astronomy, holidayRegistry: holidays, historicalRegistry: historical, eventService: events })
   };
 }
 
@@ -63,4 +67,17 @@ test("provider can register localized season, moon, and astronomical definitions
     astronomyEvents: [{ id: "sky-eclipse", calendarId: "sky-calendar", label: { value: "Eclipse" }, type: "solar-eclipse", mode: "date", date: { monthId: "month", day: 2 } }]
   });
   assert.equal(astronomy.get("sky-eclipse").providerId, "sky-provider");
+});
+
+
+test("provider can register localized holidays and historical events", () => {
+  const { api, holidays, historical } = build();
+  api.register({
+    id: "history-provider",
+    calendars: [{ ...calendar, id: "history-calendar" }],
+    holidays: [{ id: "feast", calendarId: "history-calendar", label: { i18n: "PACK.Feast" }, recurrence: { type: "yearly", monthId: "month", day: 2 }, durationDays: 2 }],
+    historicalEvents: [{ id: "founding", calendarId: "history-calendar", label: { i18n: "PACK.Founding" }, precision: "year", date: { year: 10 } }]
+  });
+  assert.equal(holidays.get("feast").providerId, "history-provider");
+  assert.equal(historical.get("founding").providerId, "history-provider");
 });

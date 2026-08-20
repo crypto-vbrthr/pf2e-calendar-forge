@@ -1,5 +1,5 @@
 import { CalendarEngine } from "../calendar/calendar-engine.js";
-import { formatCalendarDate, formatClock } from "../localization/date-formatter.js";
+import { formatCalendarDate, formatClock, formatPrecisionTime } from "../localization/date-formatter.js";
 import { resolveLabel } from "../localization/label-resolver.js";
 
 function hasOwn(object, key) {
@@ -93,7 +93,6 @@ export class TemporalContextService {
     const season = this.seasons.getState(date, calendar, resolved.seasonProfileId);
     const moons = this.moons.getStates(worldTime, calendar, resolved.moonProfileIds);
     const regionId = resolved.region?.id ?? null;
-    const events = await this.events.getEventsForDate(date, { calendarId: calendar.id, regionId });
 
     const dayStartWorldTime = this.toWorldTime({
       year: date.year,
@@ -104,6 +103,13 @@ export class TemporalContextService {
       second: 0
     }, options);
     const dayEndWorldTime = dayStartWorldTime + CalendarEngine.secondsPerDay(calendar);
+    const events = await this.events.getEventsForDate(date, {
+      calendarId: calendar.id,
+      regionId,
+      calendar,
+      dayStartWorldTime,
+      dayEndWorldTime
+    });
     const astronomicalEvents = this.astronomy?.getEventsForDate(date, {
       calendar,
       regionId,
@@ -127,6 +133,15 @@ export class TemporalContextService {
     for (const transition of moonTransitions) {
       const localDate = this.getDate({ ...options, worldTime: transition.worldTime });
       transition.formattedTime = formatClock(localDate, calendar);
+    }
+    for (const event of events) {
+      if (event.worldTime != null && Number.isFinite(Number(event.worldTime))) {
+        const localDate = this.getDate({ ...options, worldTime: Number(event.worldTime) });
+        event.formattedTime = formatClock(localDate, calendar);
+      } else if (event.type === "historical" && ["hour", "minute", "second"].includes(event.precision)) {
+        event.formattedTime = formatPrecisionTime(event.date ?? {}, event.precision, calendar);
+        if (event.precision === "hour") event.formattedTime += ` ${game.i18n.localize("CALENDAR_FORGE.Chronicle.HourSuffix")}`;
+      }
     }
 
     const secondsPerDay = CalendarEngine.secondsPerDay(calendar);

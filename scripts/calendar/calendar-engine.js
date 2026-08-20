@@ -209,6 +209,44 @@ export class CalendarEngine {
       - anchorTime;
   }
 
+  static shiftDateByDays(date, amount, calendar) {
+    const monthIndex = typeof date.monthIndex === "number"
+      ? date.monthIndex
+      : this.monthIndex(calendar, date.monthId);
+    let year = Number(date.year);
+    let ordinal = this.dayOfYear({ year, monthIndex, day: Number(date.day) }, calendar) + Number(amount);
+
+    while (ordinal >= this.daysInYear(year, calendar)) {
+      ordinal -= this.daysInYear(year, calendar);
+      year += 1;
+    }
+    while (ordinal < 0) {
+      year -= 1;
+      ordinal += this.daysInYear(year, calendar);
+    }
+
+    return this.dateFromDayOfYear(year, ordinal, calendar);
+  }
+
+  static daysBetween(start, end, calendar) {
+    const startMonth = typeof start.monthIndex === "number" ? start.monthIndex : this.monthIndex(calendar, start.monthId);
+    const endMonth = typeof end.monthIndex === "number" ? end.monthIndex : this.monthIndex(calendar, end.monthId);
+    if (Number(start.year) === Number(end.year)) {
+      return this.dayOfYear({ year: Number(end.year), monthIndex: endMonth, day: Number(end.day) }, calendar)
+        - this.dayOfYear({ year: Number(start.year), monthIndex: startMonth, day: Number(start.day) }, calendar);
+    }
+
+    if (Number(end.year) > Number(start.year)) {
+      let days = this.daysInYear(Number(start.year), calendar)
+        - this.dayOfYear({ year: Number(start.year), monthIndex: startMonth, day: Number(start.day) }, calendar);
+      for (let year = Number(start.year) + 1; year < Number(end.year); year += 1) days += this.daysInYear(year, calendar);
+      days += this.dayOfYear({ year: Number(end.year), monthIndex: endMonth, day: Number(end.day) }, calendar);
+      return days;
+    }
+
+    return -this.daysBetween(end, start, calendar);
+  }
+
   static shiftMonth(year, monthIndex, amount, calendar) {
     let nextYear = year;
     let nextMonth = monthIndex + amount;

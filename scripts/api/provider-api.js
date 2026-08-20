@@ -1,18 +1,22 @@
 import {
   validateAstronomyEvent,
   validateCalendarDefinition,
+  validateHistoricalEvent,
+  validateHolidayDefinition,
   validateMoonProfile,
   validateRegionDefinition,
   validateSeasonProfile
 } from "../validation/definition-validator.js";
 
 export class ProviderApi {
-  constructor({ calendarRegistry, seasonRegistry, moonRegistry, regionRegistry, astronomyRegistry, eventService }) {
+  constructor({ calendarRegistry, seasonRegistry, moonRegistry, regionRegistry, astronomyRegistry, holidayRegistry, historicalRegistry, eventService }) {
     this.calendars = calendarRegistry;
     this.seasons = seasonRegistry;
     this.moons = moonRegistry;
     this.regions = regionRegistry;
     this.astronomy = astronomyRegistry;
+    this.holidays = holidayRegistry;
+    this.historical = historicalRegistry;
     this.events = eventService;
     this.providers = new Map();
   }
@@ -26,12 +30,16 @@ export class ProviderApi {
     const moons = provider.moonProfiles ?? [];
     const regions = provider.regionProfiles ?? provider.regions ?? [];
     const astronomyEvents = provider.astronomyEvents ?? [];
+    const holidays = provider.holidays ?? [];
+    const historicalEvents = provider.historicalEvents ?? [];
 
     for (const definition of calendars) validateCalendarDefinition(definition);
     for (const definition of seasons) validateSeasonProfile(definition, calendars.find((calendar) => calendar.id === definition.calendarId) ?? this.calendars.get(definition.calendarId));
     for (const definition of moons) validateMoonProfile(definition);
     for (const definition of regions) validateRegionDefinition(definition);
     for (const definition of astronomyEvents) validateAstronomyEvent(definition, definition.calendarId ? (calendars.find((calendar) => calendar.id === definition.calendarId) ?? this.calendars.get(definition.calendarId)) : null);
+    for (const definition of holidays) validateHolidayDefinition(definition, calendars.find((calendar) => calendar.id === definition.calendarId) ?? this.calendars.get(definition.calendarId));
+    for (const definition of historicalEvents) validateHistoricalEvent(definition, calendars.find((calendar) => calendar.id === definition.calendarId) ?? this.calendars.get(definition.calendarId));
 
     const calendarById = (id) => calendars.find((entry) => entry.id === id) ?? this.calendars.get(id);
     const seasonById = (id) => seasons.find((entry) => entry.id === id) ?? this.seasons.get(id);
@@ -46,6 +54,16 @@ export class ProviderApi {
     for (const definition of astronomyEvents) {
       if (!calendarById(definition.calendarId)) throw new Error(`Astronomical event '${definition.id}' references unknown calendar '${definition.calendarId}'`);
       if (definition.regionId && !regionById(definition.regionId)) throw new Error(`Astronomical event '${definition.id}' references unknown region '${definition.regionId}'`);
+    }
+    for (const definition of holidays) {
+      if (!calendarById(definition.calendarId)) throw new Error(`Holiday '${definition.id}' references unknown calendar '${definition.calendarId}'`);
+      if (definition.regionId && !regionById(definition.regionId)) throw new Error(`Holiday '${definition.id}' references unknown region '${definition.regionId}'`);
+      for (const regionId of definition.regionIds ?? []) if (!regionById(regionId)) throw new Error(`Holiday '${definition.id}' references unknown region '${regionId}'`);
+    }
+    for (const definition of historicalEvents) {
+      if (!calendarById(definition.calendarId)) throw new Error(`Historical event '${definition.id}' references unknown calendar '${definition.calendarId}'`);
+      if (definition.regionId && !regionById(definition.regionId)) throw new Error(`Historical event '${definition.id}' references unknown region '${definition.regionId}'`);
+      for (const regionId of definition.regionIds ?? []) if (!regionById(regionId)) throw new Error(`Historical event '${definition.id}' references unknown region '${regionId}'`);
     }
     for (const definition of regions) {
       const calendar = definition.calendarId ? calendarById(definition.calendarId) : null;
@@ -67,12 +85,16 @@ export class ProviderApi {
     for (const definition of moons) if (this.moons.has(definition.id)) throw new Error(`Moon profile '${definition.id}' is already registered`);
     for (const definition of regions) if (this.regions.has(definition.id)) throw new Error(`Region profile '${definition.id}' is already registered`);
     for (const definition of astronomyEvents) if (this.astronomy.has(definition.id)) throw new Error(`Astronomical event '${definition.id}' is already registered`);
+    for (const definition of holidays) if (this.holidays?.has(definition.id)) throw new Error(`Holiday '${definition.id}' is already registered`);
+    for (const definition of historicalEvents) if (this.historical?.has(definition.id)) throw new Error(`Historical event '${definition.id}' is already registered`);
 
     for (const definition of calendars) this.calendars.register({ ...definition, providerId: definition.providerId ?? provider.id });
     for (const definition of seasons) this.seasons.register({ ...definition, providerId: definition.providerId ?? provider.id });
     for (const definition of moons) this.moons.register({ ...definition, providerId: definition.providerId ?? provider.id });
     for (const definition of regions) this.regions.register({ ...definition, providerId: definition.providerId ?? provider.id });
     for (const definition of astronomyEvents) this.astronomy.register({ ...definition, providerId: definition.providerId ?? provider.id });
+    for (const definition of holidays) this.holidays?.register({ ...definition, providerId: definition.providerId ?? provider.id });
+    for (const definition of historicalEvents) this.historical?.register({ ...definition, providerId: definition.providerId ?? provider.id });
     for (const event of provider.events ?? []) this.events.register({ ...event, providerId: event.providerId ?? provider.id });
 
     this.providers.set(provider.id, Object.freeze({

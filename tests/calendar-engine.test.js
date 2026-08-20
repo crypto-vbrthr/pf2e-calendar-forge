@@ -95,3 +95,16 @@ test("custom fantasy calendar supports non-Earth months and leap interval", () =
   assert.equal(roundTrip.hour, 19);
   assert.equal(roundTrip.weekdayIndex >= 0 && roundTrip.weekdayIndex < 5, true);
 });
+
+test("day shifting and day distance cross fantasy year boundaries", () => {
+  const tiny = {
+    id: "tiny",
+    time: { secondsPerMinute: 60, minutesPerHour: 60, hoursPerDay: 24 },
+    week: { days: [{ id: "d" }] },
+    months: [{ id: "a", days: 3 }, { id: "b", days: 2 }],
+    leapYear: { type: "none" }
+  };
+  const shifted = CalendarEngine.shiftDateByDays({ year: 4, monthId: "b", day: 2 }, 2, tiny);
+  assert.deepEqual({ year: shifted.year, monthId: shifted.monthId, day: shifted.day }, { year: 5, monthId: "a", day: 2 });
+  assert.equal(CalendarEngine.daysBetween({ year: 4, monthId: "b", day: 2 }, { year: 5, monthId: "a", day: 2 }, tiny), 2);
+});

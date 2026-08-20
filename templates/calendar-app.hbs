@@ -17,6 +17,7 @@
           {{#each regions as |region|}}<option value="{{region.id}}" {{#if region.selected}}selected{{/if}}>{{region.label}}</option>{{/each}}
         </select>
       </label>
+      <button type="button" class="cf-icon-button" data-action="openChronicle" data-tooltip="{{labels.chronicle}}"><i class="fa-solid fa-book-open"></i></button>
       {{#if isGM}}
         <button type="button" class="cf-icon-button" data-action="manageCalendars" data-tooltip="{{labels.calendars}}"><i class="fa-solid fa-calendar-days"></i></button>
         <button type="button" class="cf-icon-button" data-action="manageRegions" data-tooltip="{{labels.regions}}"><i class="fa-solid fa-map-location-dot"></i></button>
@@ -88,7 +89,17 @@
       <section class="cf-card cf-events-card">
         <h3><i class="fa-solid fa-star"></i> {{labels.events}}</h3>
         {{#if selected.seasonChange}}<div class="cf-event"><i class="fa-solid {{selected.seasonChange.icon}}"></i><span>{{selected.seasonChange.label}}</span></div>{{/if}}
-        {{#each selected.events as |event|}}<div class="cf-event"><i class="fa-solid {{event.icon}}"></i><span>{{event.label}}</span></div>{{else}}{{#unless selected.seasonChange}}<div class="cf-muted">{{labels.noEvents}}</div>{{/unless}}{{/each}}
+        {{#each selected.events as |event|}}
+          <div class="cf-event cf-calendar-event cf-calendar-event-{{event.type}}">
+            <i class="fa-solid {{event.icon}}"></i>
+            <span>
+              <strong>{{#if event.formattedTime}}{{event.formattedTime}} · {{/if}}{{event.label}}</strong>
+              {{#if event.descriptionText}}<small>{{event.descriptionText}}</small>{{/if}}
+              {{#if event.festivalProgressLabel}}<small>{{event.festivalProgressLabel}}</small>{{/if}}
+            </span>
+            {{#if event.journalUuid}}<button type="button" class="cf-event-link" data-action="openEventDocument" data-uuid="{{event.journalUuid}}" data-tooltip="{{../labels.openDocument}}"><i class="fa-solid fa-book"></i></button>{{/if}}
+          </div>
+        {{else}}{{#unless selected.seasonChange}}<div class="cf-muted">{{labels.noEvents}}</div>{{/unless}}{{/each}}
       </section>
     </aside>
   </main>

@@ -8,7 +8,8 @@
       "NextMonth": "Nächster Monat",
       "ManageCalendars": "Kalender verwalten",
       "ManageRegions": "Regionale Zeitkontexte verwalten",
-      "ManageTemporalProfiles": "Jahreszeiten, Monde und Astronomie verwalten"
+      "ManageTemporalProfiles": "Jahreszeiten, Monde und Astronomie verwalten",
+      "OpenChronicle": "Chronik, Feiertage und historische Ereignisse öffnen"
     },
     "Sections": {
       "Events": "Ereignisse",
@@ -307,6 +308,86 @@
       "Days": "Tage",
       "DayShort": "T",
       "HourShort": "Std."
+    },
+    "Chronicle": {
+      "Title": "Calendar Forge – Chronik",
+      "Tabs": {
+        "Chronicle": "Chronik",
+        "Holidays": "Feiertage",
+        "Historical": "Historie"
+      },
+      "Heading": "Chronik",
+      "Region": "Region / Zeitkontext",
+      "FromYear": "Von Jahr",
+      "ToYear": "Bis Jahr",
+      "Type": "Ereignisart",
+      "Search": "Suche",
+      "SearchPlaceholder": "Name, Beschreibung oder Kategorie …",
+      "Apply": "Anwenden",
+      "EventTypes": {
+        "all": "Alle",
+        "holiday": "Feiertage",
+        "historical": "Historische Ereignisse",
+        "external": "Externe Ereignisse",
+        "campaign": "Kampagnenereignisse"
+      },
+      "Sources": {
+        "Holiday": "Feiertag",
+        "Historical": "Historisch",
+        "Campaign": "Kampagne",
+        "External": "Extern"
+      },
+      "NoEntries": "Für den gewählten Zeitraum und Filter gibt es keine sichtbaren Einträge.",
+      "Holidays": "Feiertage",
+      "HistoricalEvents": "Historische Ereignisse",
+      "New": "Neu",
+      "Duplicate": "Als eigene Definition duplizieren",
+      "Save": "Speichern",
+      "Delete": "Löschen",
+      "DeleteTitle": "Calendar Forge",
+      "ConfirmDelete": "Diese benutzerdefinierte Definition wirklich löschen?",
+      "BasicData": "Grunddaten",
+      "Name": "Name",
+      "Calendar": "Kalender",
+      "Visibility": "Sichtbarkeit",
+      "Icon": "Symbol",
+      "Category": "Kategorie",
+      "DocumentUuid": "Foundry-Dokument-UUID",
+      "Description": "Beschreibung",
+      "HolidayTiming": "Feiertagsregel",
+      "RecurrenceLabel": "Wiederholung",
+      "Recurrence": {
+        "yearly": "Jährlich",
+        "once": "Einmalig"
+      },
+      "Year": "Jahr",
+      "Month": "Monat",
+      "Day": "Tag",
+      "Duration": "Dauer in Tagen",
+      "HolidayHelp": "Feiertage können global oder regional, einmalig oder jährlich wiederkehrend sein. Mehrtägige Feste laufen automatisch über Monats- und Jahresgrenzen weiter.",
+      "HistoricalTiming": "Historischer Zeitpunkt",
+      "PrecisionLabel": "Zeitgenauigkeit",
+      "Precision": {
+        "year": "Jahr",
+        "month": "Monat",
+        "day": "Tag",
+        "hour": "Stunde",
+        "minute": "Minute",
+        "second": "Sekunde"
+      },
+      "Hour": "Stunde",
+      "Minute": "Minute",
+      "Second": "Sekunde",
+      "HistoricalHelp": "Die Genauigkeit bestimmt, wie viel vom Zeitpunkt tatsächlich bekannt ist. Ein Ereignis mit Genauigkeit „Jahr“ erhält kein erfundenes Monats- oder Tagesdatum.",
+      "AllRegions": "Global / alle Regionen",
+      "NewHoliday": "Neuer Feiertag",
+      "NewHistoricalEvent": "Neues historisches Ereignis",
+      "NoDefinitions": "Für diesen Bereich sind noch keine Definitionen vorhanden.",
+      "OpenDocument": "Verknüpftes Dokument öffnen",
+      "DocumentNotFound": "Das verknüpfte Foundry-Dokument konnte nicht geöffnet werden.",
+      "DurationDays": "{days} Tage",
+      "FestivalDay": "Tag {day} von {duration}",
+      "HourSuffix": "Uhr"
     }
   }
 }

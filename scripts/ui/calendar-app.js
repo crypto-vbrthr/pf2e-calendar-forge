@@ -25,6 +25,8 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
       manageCalendars: CalendarForgeApp.#manageCalendars,
       manageRegions: CalendarForgeApp.#manageRegions,
       manageTemporalProfiles: CalendarForgeApp.#manageTemporalProfiles,
+      openChronicle: CalendarForgeApp.#openChronicle,
+      openEventDocument: CalendarForgeApp.#openEventDocument,
       advanceHour: CalendarForgeApp.#advanceHour,
       rewindHour: CalendarForgeApp.#rewindHour,
       advanceDay: CalendarForgeApp.#advanceDay,
@@ -181,7 +183,9 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
         noAstronomy: game.i18n.localize("CALENDAR_FORGE.Messages.NoAstronomy"),
         calendars: game.i18n.localize("CALENDAR_FORGE.Actions.ManageCalendars"),
         regions: game.i18n.localize("CALENDAR_FORGE.Actions.ManageRegions"),
-        temporalProfiles: game.i18n.localize("CALENDAR_FORGE.Actions.ManageTemporalProfiles")
+        temporalProfiles: game.i18n.localize("CALENDAR_FORGE.Actions.ManageTemporalProfiles"),
+        chronicle: game.i18n.localize("CALENDAR_FORGE.Actions.OpenChronicle"),
+        openDocument: game.i18n.localize("CALENDAR_FORGE.Chronicle.OpenDocument")
       }
     }, { inplace: false });
   }
@@ -218,6 +222,22 @@ export class CalendarForgeApp extends HandlebarsApplicationMixin(ApplicationV2) 
   static async #manageCalendars() { this.service.openCalendarManager(); }
   static async #manageRegions() { this.service.openRegionManager(); }
   static async #manageTemporalProfiles() { this.service.openTemporalProfiles(); }
+  static async #openChronicle() {
+    const regionId = this.regionSelection === WORLD_CONTEXT ? null : (this.regionSelection === DEFAULT_CONTEXT ? undefined : this.regionSelection);
+    this.service.openChronicle({ mode: "chronicle", regionId });
+  }
+  static async #openEventDocument(_event, target) {
+    const uuid = target.dataset.uuid;
+    if (!uuid) return;
+    try {
+      const document = await fromUuid(uuid);
+      if (!document) throw new Error("not-found");
+      document.sheet?.render(true);
+    } catch (error) {
+      console.warn("Calendar Forge | Unable to open linked document", uuid, error);
+      ui.notifications.warn(game.i18n.localize("CALENDAR_FORGE.Chronicle.DocumentNotFound"));
+    }
+  }
 
   static async #advanceHour() {
     const calendar = (await this.service.temporal.getTemporalContext(this.#contextOptions())).raw.calendar;

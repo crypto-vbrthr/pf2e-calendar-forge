@@ -185,6 +185,88 @@ export function validateAstronomyEvent(definition, calendar = null) {
   return true;
 }
 
+function validateVisibility(value, path) {
+  assert(["public", "gm"].includes(value ?? "public"), `${path} must be public or gm`);
+}
+
+function validateRegions(definition, path) {
+  if (definition.regionId) assertId(definition.regionId, `${path}.regionId`);
+  if (definition.regionIds != null) {
+    assert(Array.isArray(definition.regionIds), `${path}.regionIds must be an array`);
+    definition.regionIds.forEach((id, index) => assertId(id, `${path}.regionIds[${index}]`));
+  }
+}
+
+function validateDocumentLink(definition, path) {
+  if (definition.journalUuid != null) assert(typeof definition.journalUuid === "string", `${path}.journalUuid must be text`);
+  if (definition.description != null) assertLabel(definition.description, `${path}.description`);
+  if (definition.category != null) assertLabel(definition.category, `${path}.category`);
+}
+
+export function validateHolidayDefinition(definition, calendar = null) {
+  assert(definition && typeof definition === "object", "Holiday definition must be an object");
+  assertId(definition.id, "holiday.id");
+  assertLabel(definition.label, "holiday.label");
+  assertId(definition.calendarId, "holiday.calendarId");
+  validateVisibility(definition.visibility, "holiday.visibility");
+  validateRegions(definition, "holiday");
+  validateDocumentLink(definition, "holiday");
+
+  const recurrence = definition.recurrence ?? {};
+  assert(["yearly", "once"].includes(recurrence.type), "holiday.recurrence.type must be yearly or once");
+  assert(typeof recurrence.monthId === "string" && recurrence.monthId.length > 0, "holiday.recurrence.monthId is required");
+  assert(Number.isInteger(Number(recurrence.day)) && Number(recurrence.day) > 0, "holiday.recurrence.day must be positive");
+  if (recurrence.type === "once") assert(Number.isInteger(Number(recurrence.year)), "holiday.recurrence.year must be an integer for one-time holidays");
+  const durationDays = Number(definition.durationDays ?? 1);
+  assert(Number.isInteger(durationDays) && durationDays > 0, "holiday.durationDays must be a positive integer");
+
+  if (calendar) {
+    const monthIndex = calendar.months.findIndex((month) => month.id === recurrence.monthId);
+    assert(monthIndex >= 0, `holiday.recurrence.monthId '${recurrence.monthId}' is unknown`);
+    const year = recurrence.type === "once" ? Number(recurrence.year) : 0;
+    const maxDay = recurrence.type === "once"
+      ? CalendarEngine.daysInMonth(year, monthIndex, calendar)
+      : Number(calendar.months[monthIndex].days) + Number(calendar.months[monthIndex].leapDays ?? 0);
+    assert(Number(recurrence.day) <= maxDay, `holiday.recurrence.day is outside month '${recurrence.monthId}'`);
+  }
+  return true;
+}
+
+export function validateHistoricalEvent(definition, calendar = null) {
+  assert(definition && typeof definition === "object", "Historical event must be an object");
+  assertId(definition.id, "historical.id");
+  assertLabel(definition.label, "historical.label");
+  assertId(definition.calendarId, "historical.calendarId");
+  validateVisibility(definition.visibility, "historical.visibility");
+  validateRegions(definition, "historical");
+  validateDocumentLink(definition, "historical");
+
+  const precision = definition.precision ?? "day";
+  const precisions = ["year", "month", "day", "hour", "minute", "second"];
+  assert(precisions.includes(precision), `Unsupported historical precision '${precision}'`);
+  const rank = precisions.indexOf(precision);
+  const date = definition.date ?? {};
+  assert(Number.isInteger(Number(date.year)), "historical.date.year must be an integer");
+  if (rank >= 1) assert(typeof date.monthId === "string" && date.monthId.length > 0, "historical.date.monthId is required");
+  if (rank >= 2) assert(Number.isInteger(Number(date.day)) && Number(date.day) > 0, "historical.date.day must be positive");
+  if (rank >= 3) assert(Number.isInteger(Number(date.hour)) && Number(date.hour) >= 0, "historical.date.hour must be non-negative");
+  if (rank >= 4) assert(Number.isInteger(Number(date.minute)) && Number(date.minute) >= 0, "historical.date.minute must be non-negative");
+  if (rank >= 5) assert(Number.isInteger(Number(date.second)) && Number(date.second) >= 0, "historical.date.second must be non-negative");
+
+  if (calendar && rank >= 1) {
+    const monthIndex = calendar.months.findIndex((month) => month.id === date.monthId);
+    assert(monthIndex >= 0, `historical.date.monthId '${date.monthId}' is unknown`);
+    if (rank >= 2) {
+      const maxDay = CalendarEngine.daysInMonth(Number(date.year), monthIndex, calendar);
+      assert(Number(date.day) <= maxDay, `historical.date.day is outside month '${date.monthId}'`);
+    }
+    if (rank >= 3) assert(Number(date.hour) < Number(calendar.time?.hoursPerDay ?? 24), "historical.date.hour is outside the calendar day");
+    if (rank >= 4) assert(Number(date.minute) < Number(calendar.time?.minutesPerHour ?? 60), "historical.date.minute is outside the calendar hour");
+    if (rank >= 5) assert(Number(date.second) < Number(calendar.time?.secondsPerMinute ?? 60), "historical.date.second is outside the calendar minute");
+  }
+  return true;
+}
+
 export function slugifyId(value, fallback = "entry") {
   const slug = String(value ?? "")
     .normalize("NFKD")

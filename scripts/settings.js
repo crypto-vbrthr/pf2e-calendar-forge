@@ -26,7 +26,7 @@ export function registerSettings() {
     scope: "world",
     config: false,
     type: Object,
-    default: { calendars: [], regions: [], seasonProfiles: [], moonProfiles: [], astronomyEvents: [], anchors: {} }
+    default: { calendars: [], regions: [], seasonProfiles: [], moonProfiles: [], astronomyEvents: [], holidays: [], historicalEvents: [], anchors: {} }
   });
 
   // Legacy 0.1.x anchor settings remain as a migration-safe fallback. New anchors are

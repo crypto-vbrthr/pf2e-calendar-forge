@@ -3,6 +3,8 @@ import {
   validateAnchor,
   validateAstronomyEvent,
   validateCalendarDefinition,
+  validateHistoricalEvent,
+  validateHolidayDefinition,
   validateMoonProfile,
   validateRegionDefinition,
   validateSeasonProfile
@@ -15,13 +17,15 @@ function clone(value) {
 }
 
 export class WorldDataRepository {
-  constructor({ calendarRegistry, regionRegistry, seasonRegistry, moonRegistry, astronomyRegistry }) {
+  constructor({ calendarRegistry, regionRegistry, seasonRegistry, moonRegistry, astronomyRegistry, holidayRegistry, historicalRegistry }) {
     this.calendars = calendarRegistry;
     this.regions = regionRegistry;
     this.seasons = seasonRegistry;
     this.moons = moonRegistry;
     this.astronomy = astronomyRegistry;
-    this.data = { calendars: [], regions: [], seasonProfiles: [], moonProfiles: [], astronomyEvents: [], anchors: {} };
+    this.holidays = holidayRegistry;
+    this.historical = historicalRegistry;
+    this.data = { calendars: [], regions: [], seasonProfiles: [], moonProfiles: [], astronomyEvents: [], holidays: [], historicalEvents: [], anchors: {} };
   }
 
   async load() {
@@ -32,6 +36,8 @@ export class WorldDataRepository {
       seasonProfiles: Array.isArray(stored.seasonProfiles) ? clone(stored.seasonProfiles) : [],
       moonProfiles: Array.isArray(stored.moonProfiles) ? clone(stored.moonProfiles) : [],
       astronomyEvents: Array.isArray(stored.astronomyEvents) ? clone(stored.astronomyEvents) : [],
+      holidays: Array.isArray(stored.holidays) ? clone(stored.holidays) : [],
+      historicalEvents: Array.isArray(stored.historicalEvents) ? clone(stored.historicalEvents) : [],
       anchors: stored.anchors && typeof stored.anchors === "object" ? clone(stored.anchors) : {}
     };
 
@@ -75,6 +81,22 @@ export class WorldDataRepository {
         console.warn("Calendar Forge | Skipping invalid world astronomical event", event?.id, error);
       }
     }
+    for (const holiday of this.data.holidays) {
+      try {
+        validateHolidayDefinition(holiday, this.calendars.get(holiday.calendarId));
+        this.holidays?.register({ ...holiday, providerId: WORLD_PROVIDER_ID }, { replace: true });
+      } catch (error) {
+        console.warn("Calendar Forge | Skipping invalid world holiday", holiday?.id, error);
+      }
+    }
+    for (const event of this.data.historicalEvents) {
+      try {
+        validateHistoricalEvent(event, this.calendars.get(event.calendarId));
+        this.historical?.register({ ...event, providerId: WORLD_PROVIDER_ID }, { replace: true });
+      } catch (error) {
+        console.warn("Calendar Forge | Skipping invalid world historical event", event?.id, error);
+      }
+    }
   }
 
   async #persist() {
@@ -87,6 +109,8 @@ export class WorldDataRepository {
   isWorldSeasonProfile(id) { return this.data.seasonProfiles.some((entry) => entry.id === id); }
   isWorldMoonProfile(id) { return this.data.moonProfiles.some((entry) => entry.id === id); }
   isWorldAstronomyEvent(id) { return this.data.astronomyEvents.some((entry) => entry.id === id); }
+  isWorldHoliday(id) { return this.data.holidays.some((entry) => entry.id === id); }
+  isWorldHistoricalEvent(id) { return this.data.historicalEvents.some((entry) => entry.id === id); }
 
   getAnchor(calendarId) {
     return this.data.anchors?.[calendarId] ? clone(this.data.anchors[calendarId]) : null;
@@ -124,6 +148,10 @@ export class WorldDataRepository {
     if (usedByMoon) throw new Error(`Calendar '${id}' is used by moon profile '${usedByMoon.id}'`);
     const usedByAstronomy = this.astronomy.list().find((event) => event.calendarId === id);
     if (usedByAstronomy) throw new Error(`Calendar '${id}' is used by astronomical event '${usedByAstronomy.id}'`);
+    const usedByHoliday = this.holidays?.list().find((event) => event.calendarId === id);
+    if (usedByHoliday) throw new Error(`Calendar '${id}' is used by holiday '${usedByHoliday.id}'`);
+    const usedByHistorical = this.historical?.list().find((event) => event.calendarId === id);
+    if (usedByHistorical) throw new Error(`Calendar '${id}' is used by historical event '${usedByHistorical.id}'`);
     const before = this.data.calendars.length;
     this.data.calendars = this.data.calendars.filter((entry) => entry.id !== id);
     delete this.data.anchors[id];
@@ -157,6 +185,12 @@ export class WorldDataRepository {
   }
 
   async deleteRegion(id) {
+    const usedByAstronomy = this.astronomy.list().find((event) => event.regionId === id || (event.regionIds ?? []).includes(id));
+    if (usedByAstronomy) throw new Error(`Region '${id}' is used by astronomical event '${usedByAstronomy.id}'`);
+    const usedByHoliday = this.holidays?.list().find((event) => event.regionId === id || (event.regionIds ?? []).includes(id));
+    if (usedByHoliday) throw new Error(`Region '${id}' is used by holiday '${usedByHoliday.id}'`);
+    const usedByHistorical = this.historical?.list().find((event) => event.regionId === id || (event.regionIds ?? []).includes(id));
+    if (usedByHistorical) throw new Error(`Region '${id}' is used by historical event '${usedByHistorical.id}'`);
     const before = this.data.regions.length;
     this.data.regions = this.data.regions.filter((entry) => entry.id !== id);
     if (this.data.regions.length === before) return false;
@@ -233,6 +267,56 @@ export class WorldDataRepository {
     this.data.astronomyEvents = this.data.astronomyEvents.filter((entry) => entry.id !== id);
     if (this.data.astronomyEvents.length === before) return false;
     this.astronomy.unregister(id);
+    await this.#persist();
+    return true;
+  }
+
+  async saveHoliday(definition) {
+    const normalized = { ...clone(definition), providerId: WORLD_PROVIDER_ID };
+    const calendar = this.calendars.get(normalized.calendarId);
+    if (!calendar) throw new Error(`Unknown calendar '${normalized.calendarId}'`);
+    if (normalized.regionId && !this.regions.has(normalized.regionId)) throw new Error(`Unknown region '${normalized.regionId}'`);
+    for (const regionId of normalized.regionIds ?? []) if (!this.regions.has(regionId)) throw new Error(`Unknown region '${regionId}'`);
+    validateHolidayDefinition(normalized, calendar);
+    const index = this.data.holidays.findIndex((entry) => entry.id === normalized.id);
+    if (index < 0 && this.holidays?.has(normalized.id)) throw new Error(`Holiday id '${normalized.id}' is already provided by another source`);
+    if (index >= 0) this.data.holidays[index] = normalized;
+    else this.data.holidays.push(normalized);
+    this.holidays?.register(normalized, { replace: true });
+    await this.#persist();
+    return this.holidays?.get(normalized.id) ?? normalized;
+  }
+
+  async deleteHoliday(id) {
+    const before = this.data.holidays.length;
+    this.data.holidays = this.data.holidays.filter((entry) => entry.id !== id);
+    if (this.data.holidays.length === before) return false;
+    this.holidays?.unregister(id);
+    await this.#persist();
+    return true;
+  }
+
+  async saveHistoricalEvent(definition) {
+    const normalized = { ...clone(definition), providerId: WORLD_PROVIDER_ID };
+    const calendar = this.calendars.get(normalized.calendarId);
+    if (!calendar) throw new Error(`Unknown calendar '${normalized.calendarId}'`);
+    if (normalized.regionId && !this.regions.has(normalized.regionId)) throw new Error(`Unknown region '${normalized.regionId}'`);
+    for (const regionId of normalized.regionIds ?? []) if (!this.regions.has(regionId)) throw new Error(`Unknown region '${regionId}'`);
+    validateHistoricalEvent(normalized, calendar);
+    const index = this.data.historicalEvents.findIndex((entry) => entry.id === normalized.id);
+    if (index < 0 && this.historical?.has(normalized.id)) throw new Error(`Historical event id '${normalized.id}' is already provided by another source`);
+    if (index >= 0) this.data.historicalEvents[index] = normalized;
+    else this.data.historicalEvents.push(normalized);
+    this.historical?.register(normalized, { replace: true });
+    await this.#persist();
+    return this.historical?.get(normalized.id) ?? normalized;
+  }
+
+  async deleteHistoricalEvent(id) {
+    const before = this.data.historicalEvents.length;
+    this.data.historicalEvents = this.data.historicalEvents.filter((entry) => entry.id !== id);
+    if (this.data.historicalEvents.length === before) return false;
+    this.historical?.unregister(id);
     await this.#persist();
     return true;
   }

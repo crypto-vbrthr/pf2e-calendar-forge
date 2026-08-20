@@ -1,0 +1,149 @@
+<div class="cf-profile-shell cf-chronicle-shell">
+  <nav class="cf-profile-tabs">
+    <button type="button" data-action="setMode" data-mode="chronicle" class="{{#if isChronicle}}is-active{{/if}}"><i class="fa-solid fa-book-open"></i> {{labels.chronicle}}</button>
+    {{#if isGM}}
+      <button type="button" data-action="setMode" data-mode="holidays" class="{{#if isHolidays}}is-active{{/if}}"><i class="fa-solid fa-star"></i> {{labels.holidays}}</button>
+      <button type="button" data-action="setMode" data-mode="historical" class="{{#if isHistorical}}is-active{{/if}}"><i class="fa-solid fa-scroll"></i> {{labels.historical}}</button>
+    {{/if}}
+  </nav>
+
+  {{#if isChronicle}}
+    <div class="cf-chronicle-view">
+      <section class="cf-chronicle-filterbar">
+        <label>
+          <span>{{localize "CALENDAR_FORGE.Chronicle.Region"}}</span>
+          <select name="chronicle.region">
+            {{#each regions as |region|}}<option value="{{region.id}}" {{#if region.selected}}selected{{/if}}>{{region.label}}</option>{{/each}}
+          </select>
+        </label>
+        <label>
+          <span>{{localize "CALENDAR_FORGE.Chronicle.FromYear"}}</span>
+          <input type="number" name="chronicle.fromYear" value="{{fromYear}}">
+        </label>
+        <label>
+          <span>{{localize "CALENDAR_FORGE.Chronicle.ToYear"}}</span>
+          <input type="number" name="chronicle.toYear" value="{{toYear}}">
+        </label>
+        <label>
+          <span>{{localize "CALENDAR_FORGE.Chronicle.Type"}}</span>
+          <select name="chronicle.eventType">
+            {{#each eventTypeOptions as |option|}}<option value="{{option.id}}" {{#if option.selected}}selected{{/if}}>{{option.label}}</option>{{/each}}
+          </select>
+        </label>
+        <label class="cf-chronicle-search">
+          <span>{{localize "CALENDAR_FORGE.Chronicle.Search"}}</span>
+          <input type="search" name="chronicle.query" value="{{query}}" placeholder="{{localize 'CALENDAR_FORGE.Chronicle.SearchPlaceholder'}}">
+        </label>
+        <button type="button" class="cf-primary" data-action="applyFilters"><i class="fa-solid fa-filter"></i> {{localize "CALENDAR_FORGE.Chronicle.Apply"}}</button>
+      </section>
+
+      <header class="cf-chronicle-heading">
+        <div>
+          <div class="cf-eyebrow">{{calendarLabel}} · {{regionLabel}}</div>
+          <h2>{{localize "CALENDAR_FORGE.Chronicle.Heading"}}</h2>
+        </div>
+        <div class="cf-chronicle-range">{{fromYear}} – {{toYear}}</div>
+      </header>
+
+      <section class="cf-chronicle-list">
+        {{#each entries as |entry|}}
+          <article class="cf-chronicle-entry cf-chronicle-entry-{{entry.type}}">
+            <div class="cf-chronicle-date">{{entry.formattedDate}}</div>
+            <div class="cf-chronicle-icon"><i class="fa-solid {{entry.icon}}"></i></div>
+            <div class="cf-chronicle-body">
+              <div class="cf-chronicle-entry-head">
+                <strong>{{entry.label}}</strong>
+                <span class="cf-chip">{{entry.sourceLabel}}</span>
+                {{#if entry.categoryLabel}}<span class="cf-chip cf-chip-muted">{{entry.categoryLabel}}</span>{{/if}}
+                {{#if entry.durationLabel}}<span class="cf-chip cf-chip-muted">{{entry.durationLabel}}</span>{{/if}}
+              </div>
+              {{#if entry.descriptionText}}<p>{{entry.descriptionText}}</p>{{/if}}
+              {{#if entry.journalUuid}}<button type="button" class="cf-link-button" data-action="openDocument" data-uuid="{{entry.journalUuid}}"><i class="fa-solid fa-book"></i> {{localize "CALENDAR_FORGE.Chronicle.OpenDocument"}}</button>{{/if}}
+            </div>
+          </article>
+        {{else}}
+          <div class="cf-manager-empty cf-chronicle-empty"><i class="fa-solid fa-book-open"></i><p>{{localize "CALENDAR_FORGE.Chronicle.NoEntries"}}</p></div>
+        {{/each}}
+      </section>
+    </div>
+  {{else}}
+    <div class="cf-manager-shell cf-profile-manager-shell">
+      <aside class="cf-manager-list">
+        <div class="cf-manager-list-header">
+          <strong>{{#if isHolidays}}{{localize "CALENDAR_FORGE.Chronicle.Holidays"}}{{else}}{{localize "CALENDAR_FORGE.Chronicle.HistoricalEvents"}}{{/if}}</strong>
+          <button type="button" data-action="newDefinition" data-tooltip="{{localize 'CALENDAR_FORGE.Chronicle.New'}}"><i class="fa-solid fa-plus"></i></button>
+        </div>
+        <div class="cf-manager-items">
+          {{#each items as |item|}}
+            <button type="button" class="cf-manager-item {{#if item.selected}}is-selected{{/if}}" data-action="selectDefinition" data-id="{{item.id}}">
+              <span><strong>{{item.label}}</strong><small>{{item.id}}</small></span>
+              <span class="cf-manager-badges">{{#unless item.isWorld}}<i class="fa-solid fa-lock" data-tooltip="{{item.providerId}}"></i>{{/unless}}</span>
+            </button>
+          {{/each}}
+        </div>
+      </aside>
+
+      <section class="cf-manager-editor">
+        {{#if hasDraft}}
+          <header class="cf-manager-toolbar">
+            <div><strong>{{draft.labelValue}}</strong><div class="cf-muted">{{draft.id}}</div></div>
+            <div class="cf-manager-actions">
+              {{#if isProvider}}<button type="button" data-action="duplicateDefinition"><i class="fa-solid fa-copy"></i> {{localize "CALENDAR_FORGE.Chronicle.Duplicate"}}</button>{{/if}}
+              {{#if editable}}
+                <button type="button" class="cf-primary" data-action="saveDefinition"><i class="fa-solid fa-floppy-disk"></i> {{localize "CALENDAR_FORGE.Chronicle.Save"}}</button>
+                {{#unless isNew}}<button type="button" class="cf-danger" data-action="deleteDefinition"><i class="fa-solid fa-trash"></i> {{localize "CALENDAR_FORGE.Chronicle.Delete"}}</button>{{/unless}}
+              {{/if}}
+            </div>
+          </header>
+
+          <div class="cf-manager-scroll">
+            <section class="cf-manager-section">
+              <h3>{{localize "CALENDAR_FORGE.Chronicle.BasicData"}}</h3>
+              <div class="cf-form-grid two">
+                <label><span>ID</span><input name="definition.id" value="{{draft.id}}" {{#unless isNew}}disabled{{/unless}}></label>
+                <label><span>{{localize "CALENDAR_FORGE.Chronicle.Name"}}</span><input name="definition.label" value="{{draft.labelValue}}" {{#unless editable}}disabled{{/unless}}></label>
+                <label><span>{{localize "CALENDAR_FORGE.Chronicle.Calendar"}}</span><select name="definition.calendarId" class="cf-chronicle-reactive" {{#unless editable}}disabled{{/unless}}>{{#each calendars as |calendar|}}<option value="{{calendar.id}}" {{#if calendar.selected}}selected{{/if}}>{{calendar.label}}</option>{{/each}}</select></label>
+                <label><span>{{localize "CALENDAR_FORGE.Chronicle.Region"}}</span><select name="definition.regionId" {{#unless editable}}disabled{{/unless}}>{{#each regions as |region|}}<option value="{{region.id}}" {{#if region.selected}}selected{{/if}}>{{region.label}}</option>{{/each}}</select></label>
+                <label><span>{{localize "CALENDAR_FORGE.Chronicle.Visibility"}}</span><select name="definition.visibility" {{#unless editable}}disabled{{/unless}}>{{#each visibilityOptions as |option|}}<option value="{{option.id}}" {{#if option.selected}}selected{{/if}}>{{option.label}}</option>{{/each}}</select></label>
+                <label><span>{{localize "CALENDAR_FORGE.Chronicle.Icon"}}</span><input name="definition.icon" value="{{draft.icon}}" {{#unless editable}}disabled{{/unless}}></label>
+                <label><span>{{localize "CALENDAR_FORGE.Chronicle.Category"}}</span><input name="definition.category" value="{{draft.categoryValue}}" {{#unless editable}}disabled{{/unless}}></label>
+                <label><span>{{localize "CALENDAR_FORGE.Chronicle.DocumentUuid"}}</span><input name="definition.journalUuid" value="{{draft.journalUuid}}" placeholder="JournalEntry..." {{#unless editable}}disabled{{/unless}}></label>
+              </div>
+              <label class="cf-full"><span>{{localize "CALENDAR_FORGE.Chronicle.Description"}}</span><textarea name="definition.description" rows="4" {{#unless editable}}disabled{{/unless}}>{{draft.descriptionValue}}</textarea></label>
+            </section>
+
+            {{#if isHolidays}}
+              <section class="cf-manager-section">
+                <h3>{{localize "CALENDAR_FORGE.Chronicle.HolidayTiming"}}</h3>
+                <div class="cf-form-grid four">
+                  <label><span>{{localize "CALENDAR_FORGE.Chronicle.RecurrenceLabel"}}</span><select name="holiday.recurrenceType" class="cf-chronicle-reactive" {{#unless editable}}disabled{{/unless}}>{{#each recurrenceOptions as |option|}}<option value="{{option.id}}" {{#if option.selected}}selected{{/if}}>{{option.label}}</option>{{/each}}</select></label>
+                  {{#if isOnceHoliday}}<label><span>{{localize "CALENDAR_FORGE.Chronicle.Year"}}</span><input type="number" name="holiday.year" value="{{draft.recurrence.year}}" {{#unless editable}}disabled{{/unless}}></label>{{/if}}
+                  <label><span>{{localize "CALENDAR_FORGE.Chronicle.Month"}}</span><select name="holiday.monthId" {{#unless editable}}disabled{{/unless}}>{{#each months as |month|}}<option value="{{month.id}}" {{#if month.selected}}selected{{/if}}>{{month.label}}</option>{{/each}}</select></label>
+                  <label><span>{{localize "CALENDAR_FORGE.Chronicle.Day"}}</span><input type="number" min="1" name="holiday.day" value="{{draft.recurrence.day}}" {{#unless editable}}disabled{{/unless}}></label>
+                  <label><span>{{localize "CALENDAR_FORGE.Chronicle.Duration"}}</span><input type="number" min="1" name="holiday.durationDays" value="{{draft.durationDays}}" {{#unless editable}}disabled{{/unless}}></label>
+                </div>
+                <p class="cf-help">{{localize "CALENDAR_FORGE.Chronicle.HolidayHelp"}}</p>
+              </section>
+            {{else}}
+              <section class="cf-manager-section">
+                <h3>{{localize "CALENDAR_FORGE.Chronicle.HistoricalTiming"}}</h3>
+                <div class="cf-form-grid three">
+                  <label><span>{{localize "CALENDAR_FORGE.Chronicle.PrecisionLabel"}}</span><select name="historical.precision" class="cf-chronicle-reactive" {{#unless editable}}disabled{{/unless}}>{{#each precisionOptions as |option|}}<option value="{{option.id}}" {{#if option.selected}}selected{{/if}}>{{option.label}}</option>{{/each}}</select></label>
+                  <label><span>{{localize "CALENDAR_FORGE.Chronicle.Year"}}</span><input type="number" name="historical.year" value="{{draft.date.year}}" {{#unless editable}}disabled{{/unless}}></label>
+                  {{#if showMonth}}<label><span>{{localize "CALENDAR_FORGE.Chronicle.Month"}}</span><select name="historical.monthId" {{#unless editable}}disabled{{/unless}}>{{#each months as |month|}}<option value="{{month.id}}" {{#if month.selected}}selected{{/if}}>{{month.label}}</option>{{/each}}</select></label>{{/if}}
+                  {{#if showDay}}<label><span>{{localize "CALENDAR_FORGE.Chronicle.Day"}}</span><input type="number" min="1" name="historical.day" value="{{draft.date.day}}" {{#unless editable}}disabled{{/unless}}></label>{{/if}}
+                  {{#if showHour}}<label><span>{{localize "CALENDAR_FORGE.Chronicle.Hour"}}</span><input type="number" min="0" name="historical.hour" value="{{draft.date.hour}}" {{#unless editable}}disabled{{/unless}}></label>{{/if}}
+                  {{#if showMinute}}<label><span>{{localize "CALENDAR_FORGE.Chronicle.Minute"}}</span><input type="number" min="0" name="historical.minute" value="{{draft.date.minute}}" {{#unless editable}}disabled{{/unless}}></label>{{/if}}
+                  {{#if showSecond}}<label><span>{{localize "CALENDAR_FORGE.Chronicle.Second"}}</span><input type="number" min="0" name="historical.second" value="{{draft.date.second}}" {{#unless editable}}disabled{{/unless}}></label>{{/if}}
+                </div>
+                <p class="cf-help">{{localize "CALENDAR_FORGE.Chronicle.HistoricalHelp"}}</p>
+              </section>
+            {{/if}}
+          </div>
+        {{else}}
+          <div class="cf-manager-empty"><i class="fa-solid {{#if isHolidays}}fa-star{{else}}fa-scroll{{/if}}"></i><p>{{localize "CALENDAR_FORGE.Chronicle.NoDefinitions"}}</p><button type="button" data-action="newDefinition"><i class="fa-solid fa-plus"></i> {{localize "CALENDAR_FORGE.Chronicle.New"}}</button></div>
+        {{/if}}
+      </section>
+    </div>
+  {{/if}}
+</div>

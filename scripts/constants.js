@@ -1,6 +1,6 @@
 export const MODULE_ID = "pf2e-calendar-forge";
-export const API_VERSION = 3;
-export const SCHEMA_VERSION = 2;
+export const API_VERSION = 4;
+export const SCHEMA_VERSION = 3;
 
 export const SETTINGS = Object.freeze({
   ACTIVE_CALENDAR: "activeCalendar",
