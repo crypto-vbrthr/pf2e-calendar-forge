@@ -1,101 +1,180 @@
-# Calendar Forge 0.1.1
+# Calendar Forge 0.2.0
 
-First architectural draft for Foundry VTT 14.
+Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock; Calendar Forge translates that absolute time into localized calendar dates and regional temporal contexts.
 
-## Core principles
+## 0.2.0 – Calendar Definitions & Regional Time Context
 
-- `game.time.worldTime` is the only running clock.
-- Calendar Forge converts world time to calendar date/time and back.
-- Calendar Forge does not maintain a second ticking time value.
-- Other modules consume a stable Temporal Context API.
-- External modules can register calendars, season profiles, moon profiles, and calendar events.
-- All provider-facing labels can use Foundry i18n keys.
+### Calendar definitions
 
-## Included in 0.1.1
+- Large Calendar Forge monthly view remains the primary calendar UI.
+- New GM calendar-definition manager.
+- Custom calendars can define:
+  - seconds per minute, minutes per hour, and hours per day;
+  - any number of weekdays with long and short names;
+  - any number of months with individual lengths;
+  - optional leap days per month;
+  - no leap rule, Gregorian leap rule, or interval-based leap rule;
+  - era labels;
+  - localized/custom date and date-time formats.
+- Every calendar has an independent world-time anchor. Provider calendars remain read-only, but their world anchor can be overridden for the current world.
+- Provider calendars can be duplicated into editable world calendars.
+- Existing 0.1.x Earth-calendar anchor settings remain a migration-safe fallback.
 
-- Pure CalendarEngine with month/year/leap-year conversion.
-- Gregorian Earth-like built-in calendar with DE/EN month and weekday localization.
-- World-time anchor settings.
-- Season and moon context services.
-- Event registry with annual and fixed-date event support.
-- Provider API for external content modules.
-- Large ApplicationV2 monthly view with day inspector and day markers.
-- GM world-time controls.
-- Small launcher button in the Foundry V14 Scene Regions control submenu (left-hand Scene Controls).
-- Public API via `game.modules.get("pf2e-calendar-forge").api` and `globalThis.CalendarForge.api`.
+### Regional temporal context
 
-## Provider example
+- New regional-context manager.
+- A region can define:
+  - calendar ID;
+  - fixed local time offset while retaining the same Foundry world time;
+  - season profile;
+  - moon profiles.
+- One region can be selected as the world default.
+- The main calendar can preview the world default, no region, or any registered region.
+- `getTemporalContext({ regionId })`, `getDate({ regionId })`, and `toWorldTime(date, { regionId })` are bidirectional and region-aware.
+- Explicit `regionId: null` bypasses the configured default region.
+
+### Provider API
+
+External modules can register prebuilt localized calendar content. All user-facing labels may be Foundry i18n keys.
 
 ```js
 Hooks.once("calendarForgeReady", (api) => {
   api.providers.register({
-    id: "my-setting-calendar",
+    id: "calendar-forge-golarion",
     schemaVersion: 1,
     contentVersion: "1.0.0",
     calendars: [
       {
-        id: "my-calendar",
-        schemaVersion: 1,
-        label: { i18n: "MY_MODULE.Calendar.Name" },
-        era: { i18n: "MY_MODULE.Calendar.Era" },
+        id: "golarion-ar",
+        label: { i18n: "CF_GOLARION.Calendar.Name" },
+        era: { i18n: "CF_GOLARION.Calendar.Era" },
         time: { secondsPerMinute: 60, minutesPerHour: 60, hoursPerDay: 24 },
         week: {
           days: [
-            { id: "firstday", label: { i18n: "MY_MODULE.Weekdays.First" }, shortLabel: { i18n: "MY_MODULE.Weekdays.FirstShort" } }
+            {
+              id: "moonday",
+              label: { i18n: "CF_GOLARION.Weekdays.Moonday" },
+              shortLabel: { i18n: "CF_GOLARION.Weekdays.MoondayShort" }
+            }
           ]
         },
         months: [
-          { id: "harvest", days: 30, label: { i18n: "MY_MODULE.Months.Harvest" }, shortLabel: { i18n: "MY_MODULE.Months.HarvestShort" } }
+          {
+            id: "abadius",
+            days: 31,
+            label: { i18n: "CF_GOLARION.Months.Abadius" },
+            shortLabel: { i18n: "CF_GOLARION.Months.AbadiusShort" }
+          }
         ],
         leapYear: { type: "none" },
+        defaultAnchor: {
+          worldTime: 0,
+          year: 4724,
+          monthId: "abadius",
+          day: 1,
+          hour: 0,
+          minute: 0,
+          second: 0,
+          weekdayIndex: 0
+        },
         dateFormats: {
-          date: { i18n: "MY_MODULE.Formats.Date" },
-          dateTime: { i18n: "MY_MODULE.Formats.DateTime" }
+          date: { i18n: "CF_GOLARION.Formats.Date" },
+          dateTime: { i18n: "CF_GOLARION.Formats.DateTime" }
         }
+      }
+    ],
+    regionProfiles: [
+      {
+        id: "varisia",
+        label: { i18n: "CF_GOLARION.Regions.Varisia" },
+        calendarId: "golarion-ar",
+        timeOffsetSeconds: -7200,
+        seasonProfileId: "varisia-seasons",
+        moonProfileIds: ["golarion-moon"]
       }
     ]
   });
 });
 ```
 
+Provider definitions are read-only. A GM can duplicate a provider calendar or region into a world-owned editable definition.
+
 ## Public API highlights
 
 ```js
 await CalendarForge.api.getTemporalContext();
-CalendarForge.api.getDate();
-CalendarForge.api.toWorldTime(date);
-await CalendarForge.api.advanceTime(seconds);
+await CalendarForge.api.getTemporalContext({ regionId: "varisia" });
+await CalendarForge.api.getTemporalContext({ regionId: null });
+
+CalendarForge.api.getDate({ regionId: "varisia" });
+CalendarForge.api.toWorldTime(date, { regionId: "varisia" });
+CalendarForge.api.getAnchor("golarion-ar");
+
+CalendarForge.api.calendars.list();
+CalendarForge.api.regions.list();
+CalendarForge.api.regions.defaultId();
 CalendarForge.api.providers.register(provider);
-CalendarForge.api.registerEventProvider(id, providerFn);
+
 CalendarForge.api.open();
+CalendarForge.api.openCalendarManager();
+CalendarForge.api.openRegionManager();
+```
+
+## Temporal-context shape
+
+A regional context preserves canonical world time and exposes the translated local world-time value separately:
+
+```js
+{
+  worldTime: 100000,          // canonical Foundry time
+  localWorldTime: 92800,      // worldTime + regional offset
+  regionId: "varisia",
+  region: {
+    id: "varisia",
+    label: "Varisia",
+    timeOffsetSeconds: -7200
+  },
+  calendar: { /* date fields */ },
+  time: {
+    hour: 12,
+    minute: 30,
+    second: 0,
+    dayProgress: 0.52,
+    offsetSeconds: -7200
+  },
+  season: { /* optional */ },
+  moons: [],
+  events: [],
+  profiles: {
+    seasonProfileId: "varisia-seasons",
+    moonProfileIds: ["golarion-moon"]
+  },
+  formatted: { /* localized date/time strings */ }
+}
 ```
 
 ## Hooks
 
 - `calendarForgeReady(api)`
 - `calendarForgeProviderRegistered(providerId)`
+- `calendarForgeDefinitionsChanged()`
 - `calendarForgeTimeChanged(context, change)`
 - `calendarForgeContextChanged(context, change)`
+- `calendarForgeCalendarChanged(context, change)`
+- `calendarForgeRegionChanged(context, change)`
 - `calendarForgeDayChanged(context, change)`
 - `calendarForgeMonthChanged(context, change)`
 - `calendarForgeYearChanged(context, change)`
 - `calendarForgeSeasonChanged(context, change)`
 - `calendarForgeMoonPhaseChanged(context, change)`
 
-## Deliberately deferred
+## Still deliberately deferred
 
-The 0.1.x schema leaves room for these features, but they are not yet full editors/runtimes:
-
-- Regional calendar overrides and regional time zones.
 - Holiday editor and complex recurrence rules.
 - Historical chronicle editor.
 - Solar/lunar eclipse calculation.
-- Multiple calendar instances per world.
+- Rich astronomy editor and multiple-orbit modelling.
 - Campaign Forge bridge.
 - Weather Forge integration changes.
 
-
-## 0.1.1 fix
-
-- Moved the launcher integration to the supported Foundry V14 `getSceneControlButtons` hook.
-- Calendar Forge now appears as a button in the Scene Regions control submenu instead of targeting the RegionTab sidebar application.
+The schemas and provider registries remain designed for those later layers without introducing a second clock.

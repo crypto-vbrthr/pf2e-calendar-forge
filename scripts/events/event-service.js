@@ -30,6 +30,9 @@ export class EventService {
 
   #matches(event, date, context) {
     if (event.calendarId && event.calendarId !== context.calendarId) return false;
+    if (event.regionId && event.regionId !== context.regionId) return false;
+    if (Array.isArray(event.regionIds) && event.regionIds.length && !event.regionIds.includes(context.regionId)) return false;
+    if (event.scope?.type === "region" && Array.isArray(event.scope.regionIds) && !event.scope.regionIds.includes(context.regionId)) return false;
     if (event.visibility === "gm" && !game.user?.isGM) return false;
 
     if (event.recurrence?.type === "yearly") {

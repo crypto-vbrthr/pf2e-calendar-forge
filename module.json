@@ -2,7 +2,7 @@
   "id": "pf2e-calendar-forge",
   "title": "Calendar Forge",
   "description": "A world-time backed calendar, season, moon, and temporal-context service for Foundry VTT.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "authors": [
     {
       "name": "Calendar Forge"

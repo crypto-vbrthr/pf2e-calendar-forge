@@ -97,10 +97,23 @@ export class CalendarEngine {
     const monthIndex = typeof date.monthIndex === "number"
       ? date.monthIndex
       : this.monthIndex(calendar, date.monthId);
+    if (!Number.isInteger(monthIndex) || monthIndex < 0 || monthIndex >= calendar.months.length) {
+      throw new RangeError(`Unknown month index ${monthIndex}`);
+    }
     const maxDay = this.daysInMonth(date.year, monthIndex, calendar);
     if (!Number.isInteger(date.day) || date.day < 1 || date.day > maxDay) {
       throw new RangeError(`day must be between 1 and ${maxDay}`);
     }
+
+    const hour = Number(date.hour ?? 0);
+    const minute = Number(date.minute ?? 0);
+    const second = Number(date.second ?? 0);
+    const hoursPerDay = Number(calendar.time?.hoursPerDay ?? 24);
+    const minutesPerHour = Number(calendar.time?.minutesPerHour ?? 60);
+    const secondsPerMinute = Number(calendar.time?.secondsPerMinute ?? 60);
+    if (!Number.isInteger(hour) || hour < 0 || hour >= hoursPerDay) throw new RangeError(`hour must be between 0 and ${hoursPerDay - 1}`);
+    if (!Number.isInteger(minute) || minute < 0 || minute >= minutesPerHour) throw new RangeError(`minute must be between 0 and ${minutesPerHour - 1}`);
+    if (!Number.isInteger(second) || second < 0 || second >= secondsPerMinute) throw new RangeError(`second must be between 0 and ${secondsPerMinute - 1}`);
     return monthIndex;
   }
 

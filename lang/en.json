@@ -5,7 +5,9 @@
       "Open": "Open Calendar Forge",
       "Today": "Today",
       "PreviousMonth": "Previous month",
-      "NextMonth": "Next month"
+      "NextMonth": "Next month",
+      "ManageCalendars": "Manage calendars",
+      "ManageRegions": "Manage regional time contexts"
     },
     "Sections": {
       "Events": "Events",
@@ -13,39 +15,66 @@
       "Season": "Season"
     },
     "Messages": {
-      "NoEvents": "No special events on this day."
+      "NoEvents": "No special events on this day.",
+      "NoMoons": "No moons are configured for this context.",
+      "Saved": "Saved.",
+      "InvalidDefinition": "The definition is invalid:",
+      "ConfirmDeleteCalendar": "Really delete this custom calendar?",
+      "ConfirmDeleteRegion": "Really delete this regional time context?",
+      "DeleteFailed": "Could not delete:"
     },
     "Calendars": {
       "Gregorian": "Earth Calendar",
       "GregorianDescription": "Gregorian calendar with localized month and weekday names."
     },
-    "Eras": { "CE": "CE" },
+    "Eras": {
+      "CE": "CE"
+    },
     "Formats": {
       "Date": "{weekday}, {month} {day}, {year} {era}",
       "DateTime": "{weekday}, {month} {day}, {year} {era}, {hour}:{minute}"
     },
     "Months": {
-      "January": "January", "JanuaryShort": "Jan",
-      "February": "February", "FebruaryShort": "Feb",
-      "March": "March", "MarchShort": "Mar",
-      "April": "April", "AprilShort": "Apr",
-      "May": "May", "MayShort": "May",
-      "June": "June", "JuneShort": "Jun",
-      "July": "July", "JulyShort": "Jul",
-      "August": "August", "AugustShort": "Aug",
-      "September": "September", "SeptemberShort": "Sep",
-      "October": "October", "OctoberShort": "Oct",
-      "November": "November", "NovemberShort": "Nov",
-      "December": "December", "DecemberShort": "Dec"
+      "January": "January",
+      "JanuaryShort": "Jan",
+      "February": "February",
+      "FebruaryShort": "Feb",
+      "March": "March",
+      "MarchShort": "Mar",
+      "April": "April",
+      "AprilShort": "Apr",
+      "May": "May",
+      "MayShort": "May",
+      "June": "June",
+      "JuneShort": "Jun",
+      "July": "July",
+      "JulyShort": "Jul",
+      "August": "August",
+      "AugustShort": "Aug",
+      "September": "September",
+      "SeptemberShort": "Sep",
+      "October": "October",
+      "OctoberShort": "Oct",
+      "November": "November",
+      "NovemberShort": "Nov",
+      "December": "December",
+      "DecemberShort": "Dec"
     },
     "Weekdays": {
-      "Monday": "Monday", "MondayShort": "Mon",
-      "Tuesday": "Tuesday", "TuesdayShort": "Tue",
-      "Wednesday": "Wednesday", "WednesdayShort": "Wed",
-      "Thursday": "Thursday", "ThursdayShort": "Thu",
-      "Friday": "Friday", "FridayShort": "Fri",
-      "Saturday": "Saturday", "SaturdayShort": "Sat",
-      "Sunday": "Sunday", "SundayShort": "Sun"
+      "Monday": "Monday",
+      "MondayShort": "Mon",
+      "Tuesday": "Tuesday",
+      "TuesdayShort": "Tue",
+      "Wednesday": "Wednesday",
+      "WednesdayShort": "Wed",
+      "Thursday": "Thursday",
+      "ThursdayShort": "Thu",
+      "Friday": "Friday",
+      "FridayShort": "Fri",
+      "Saturday": "Saturday",
+      "SaturdayShort": "Sat",
+      "Sunday": "Sunday",
+      "SundayShort": "Sun"
     },
     "Seasons": {
       "Spring": "Spring",
@@ -56,7 +85,9 @@
     "SeasonProfiles": {
       "NorthernTemperate": "Northern Temperate"
     },
-    "Moons": { "Moon": "Moon" },
+    "Moons": {
+      "Moon": "Moon"
+    },
     "MoonPhases": {
       "New": "New Moon",
       "WaxingCrescent": "Waxing Crescent",
@@ -84,10 +115,18 @@
         "Name": "Anchor: Month ID",
         "Hint": "Stable month ID of the active calendar, such as january or an ID supplied by a content module."
       },
-      "AnchorDay": { "Name": "Anchor: Day" },
-      "AnchorHour": { "Name": "Anchor: Hour" },
-      "AnchorMinute": { "Name": "Anchor: Minute" },
-      "AnchorSecond": { "Name": "Anchor: Second" },
+      "AnchorDay": {
+        "Name": "Anchor: Day"
+      },
+      "AnchorHour": {
+        "Name": "Anchor: Hour"
+      },
+      "AnchorMinute": {
+        "Name": "Anchor: Minute"
+      },
+      "AnchorSecond": {
+        "Name": "Anchor: Second"
+      },
       "AnchorWeekday": {
         "Name": "Anchor: Weekday Index",
         "Hint": "Zero-based weekday index at the anchor date. In the standard calendar, 0 is Monday."
@@ -99,7 +138,93 @@
       "MoonProfiles": {
         "Name": "Active Moon Profiles",
         "Hint": "Comma-separated IDs of active moon profiles."
+      },
+      "DefaultRegion": {
+        "Name": "Default Region",
+        "Hint": "Managed through the Calendar Forge interface."
       }
+    },
+    "RegionSelector": {
+      "Default": "World default",
+      "DefaultWithRegion": "World default ({region})",
+      "World": "No region"
+    },
+    "Fields": {
+      "Id": "ID",
+      "Name": "Name",
+      "Description": "Description",
+      "Era": "Era",
+      "SecondsPerMinute": "Seconds per minute",
+      "MinutesPerHour": "Minutes per hour",
+      "HoursPerDay": "Hours per day",
+      "Short": "Short name",
+      "Days": "Days",
+      "LeapDays": "Extra leap days",
+      "LeapRule": "Leap rule",
+      "LeapInterval": "Leap interval",
+      "LeapOffset": "Leap offset",
+      "DateFormat": "Date format",
+      "DateTimeFormat": "Date/time format",
+      "WorldTime": "Foundry world time",
+      "Year": "Year",
+      "Month": "Month",
+      "Day": "Day",
+      "Hour": "Hour",
+      "Minute": "Minute",
+      "Second": "Second",
+      "Weekday": "Weekday",
+      "Calendar": "Calendar",
+      "TimeOffsetHours": "Time offset in hours",
+      "SeasonProfile": "Season profile",
+      "MoonProfiles": "Moon profiles"
+    },
+    "CalendarManager": {
+      "Title": "Calendar Forge – Calendar Definitions",
+      "Calendars": "Calendars",
+      "New": "Create calendar",
+      "Active": "World default calendar",
+      "Editable": "Custom and editable",
+      "Provider": "Provided by a module",
+      "SetActive": "Set as world default",
+      "Duplicate": "Duplicate",
+      "Save": "Save",
+      "SaveAnchor": "Save time anchor",
+      "Basics": "Basics",
+      "TimeStructure": "Time structure",
+      "Weekdays": "Weekdays",
+      "Months": "Months",
+      "AddWeekday": "Add weekday",
+      "AddMonth": "Add month",
+      "LeapRules": "Leap rules",
+      "Formats": "Date formats",
+      "Anchor": "Time anchor",
+      "FormatHelp": "Available placeholders: {weekday}, {weekdayShort}, {day}, {month}, {monthShort}, {year}, {era}, {hour}, {minute}, {second}.",
+      "AnchorHelp": "This anchor maps one Foundry worldTime value to one date in this calendar. Calendar Forge still does not maintain a second running clock.",
+      "NoCalendars": "No calendar is registered.",
+      "NewMonth": "New Month",
+      "NewWeekday": "New Day",
+      "Leap": {
+        "none": "No leap days",
+        "gregorian": "Gregorian rule",
+        "interval": "Regular interval"
+      }
+    },
+    "RegionManager": {
+      "Title": "Calendar Forge – Regional Time Contexts",
+      "Regions": "Regions",
+      "Default": "World default region",
+      "ClearDefault": "Clear world default region",
+      "SetDefault": "Set as world default region",
+      "Duplicate": "Duplicate",
+      "Save": "Save",
+      "Basics": "Regional context",
+      "TemporalProfiles": "Time, season, and moon profiles",
+      "NewRegion": "New Region",
+      "UseWorldDefault": "Use world default",
+      "OffsetHelp": "The time offset changes only the regional representation. The underlying Foundry world time remains unchanged.",
+      "ProfileHelp": "A region can use another calendar, a fixed local time offset, and its own season and moon profiles.",
+      "NoRegions": "No regional time contexts have been created yet.",
+      "CreateFirst": "Create first region"
     }
   }
 }

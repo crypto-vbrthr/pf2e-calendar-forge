@@ -2,48 +2,116 @@ import { CalendarEngine } from "../calendar/calendar-engine.js";
 import { formatCalendarDate, formatClock } from "../localization/date-formatter.js";
 import { resolveLabel } from "../localization/label-resolver.js";
 
+function hasOwn(object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
 export class TemporalContextService {
-  constructor({ calendarRegistry, seasonService, moonService, eventService, settings }) {
+  constructor({ calendarRegistry, seasonService, moonService, eventService, regionService, settings, worldData }) {
     this.calendars = calendarRegistry;
     this.seasons = seasonService;
     this.moons = moonService;
     this.events = eventService;
+    this.regions = regionService;
     this.settings = settings;
+    this.worldData = worldData;
   }
 
-  getCalendar(calendarId = null) {
-    const id = calendarId ?? this.settings.activeCalendarId();
-    return this.calendars.get(id) ?? this.calendars.list()[0] ?? null;
+  resolve(options = {}) {
+    const region = this.regions.resolve(options);
+    const requestedCalendarId = hasOwn(options, "calendarId") && options.calendarId
+      ? options.calendarId
+      : region?.calendarId ?? this.settings.activeCalendarId();
+    const calendar = this.calendars.get(requestedCalendarId) ?? this.calendars.list()[0] ?? null;
+    if (!calendar) return { calendar: null, region };
+
+    const seasonProfileId = hasOwn(options, "seasonProfileId")
+      ? options.seasonProfileId
+      : region?.seasonProfileId ?? this.settings.activeSeasonProfileId();
+    const moonProfileIds = hasOwn(options, "moonProfileIds")
+      ? [...(options.moonProfileIds ?? [])]
+      : region?.moonProfileIds?.length
+        ? [...region.moonProfileIds]
+        : this.settings.activeMoonProfileIds();
+
+    return {
+      calendar,
+      region,
+      timeOffsetSeconds: Number(region?.timeOffsetSeconds ?? 0),
+      seasonProfileId: seasonProfileId || null,
+      moonProfileIds
+    };
+  }
+
+  getCalendar(calendarId = null, options = {}) {
+    if (calendarId) return this.calendars.get(calendarId) ?? null;
+    return this.resolve(options).calendar;
   }
 
   getAnchor(calendar) {
-    return this.settings.anchor(calendar);
+    const stored = this.worldData.getAnchor(calendar.id);
+    if (stored) return stored;
+
+    // Preserve the 0.1.x built-in calendar anchor settings when upgrading an existing world.
+    if (calendar.id === "earth-gregorian") return this.settings.legacyAnchor(calendar);
+    if (calendar.defaultAnchor) return structuredClone(calendar.defaultAnchor);
+
+    // External 0.1.x calendars without their own default anchor used the same world anchor.
+    if (calendar.id === this.settings.activeCalendarId()) return this.settings.legacyAnchor(calendar);
+
+    return {
+      worldTime: 0,
+      year: 1,
+      monthId: calendar.months[0]?.id,
+      day: 1,
+      hour: 0,
+      minute: 0,
+      second: 0,
+      weekdayIndex: 0
+    };
   }
 
-  getDate({ worldTime = game.time.worldTime, calendarId = null } = {}) {
-    const calendar = this.getCalendar(calendarId);
-    if (!calendar) throw new Error("No Calendar Forge calendar is registered");
-    return CalendarEngine.fromWorldTime(worldTime, calendar, this.getAnchor(calendar));
+  getDate(options = {}) {
+    const worldTime = hasOwn(options, "worldTime") ? Number(options.worldTime) : Number(game.time.worldTime);
+    const resolved = this.resolve(options);
+    if (!resolved.calendar) throw new Error("No Calendar Forge calendar is registered");
+    const localWorldTime = worldTime + resolved.timeOffsetSeconds;
+    return CalendarEngine.fromWorldTime(localWorldTime, resolved.calendar, this.getAnchor(resolved.calendar));
   }
 
-  toWorldTime(date, { calendarId = null } = {}) {
-    const calendar = this.getCalendar(calendarId);
-    if (!calendar) throw new Error("No Calendar Forge calendar is registered");
-    return CalendarEngine.toWorldTime(date, calendar, this.getAnchor(calendar));
+  toWorldTime(date, options = {}) {
+    const resolved = this.resolve(options);
+    if (!resolved.calendar) throw new Error("No Calendar Forge calendar is registered");
+    const localWorldTime = CalendarEngine.toWorldTime(date, resolved.calendar, this.getAnchor(resolved.calendar));
+    return localWorldTime - resolved.timeOffsetSeconds;
   }
 
-  async getTemporalContext({ worldTime = game.time.worldTime, calendarId = null, regionId = null } = {}) {
-    const calendar = this.getCalendar(calendarId);
+  async getTemporalContext(options = {}) {
+    const worldTime = hasOwn(options, "worldTime") ? Number(options.worldTime) : Number(game.time.worldTime);
+    const resolved = this.resolve(options);
+    const calendar = resolved.calendar;
     if (!calendar) throw new Error("No Calendar Forge calendar is registered");
-    const date = CalendarEngine.fromWorldTime(worldTime, calendar, this.getAnchor(calendar));
-    const seasonProfileId = this.settings.activeSeasonProfileId();
-    const moonProfileIds = this.settings.activeMoonProfileIds();
-    const season = this.seasons.getState(date, calendar, seasonProfileId);
-    const moons = this.moons.getStates(worldTime, calendar, moonProfileIds);
+
+    const localWorldTime = worldTime + resolved.timeOffsetSeconds;
+    const date = CalendarEngine.fromWorldTime(localWorldTime, calendar, this.getAnchor(calendar));
+    const season = this.seasons.getState(date, calendar, resolved.seasonProfileId);
+    const moons = this.moons.getStates(worldTime, calendar, resolved.moonProfileIds);
+    const regionId = resolved.region?.id ?? null;
     const events = await this.events.getEventsForDate(date, { calendarId: calendar.id, regionId });
+
+    const secondsPerDay = CalendarEngine.secondsPerDay(calendar);
+    const secondsPerHour = CalendarEngine.secondsPerHour(calendar);
+    const secondsPerMinute = CalendarEngine.secondsPerMinute(calendar);
+    const timeSeconds = date.hour * secondsPerHour + date.minute * secondsPerMinute + date.second;
 
     return {
       worldTime,
+      localWorldTime,
+      region: resolved.region ? {
+        id: resolved.region.id,
+        label: resolveLabel(resolved.region.label, resolved.region.id),
+        timeOffsetSeconds: resolved.timeOffsetSeconds
+      } : null,
       regionId,
       calendar: {
         id: calendar.id,
@@ -61,17 +129,22 @@ export class TemporalContextService {
         hour: date.hour,
         minute: date.minute,
         second: date.second,
-        dayProgress: (date.hour + date.minute / 60 + date.second / 3600) / (calendar.time?.hoursPerDay ?? 24)
+        dayProgress: secondsPerDay > 0 ? timeSeconds / secondsPerDay : 0,
+        offsetSeconds: resolved.timeOffsetSeconds
       },
       season,
       moons,
       events,
+      profiles: {
+        seasonProfileId: resolved.seasonProfileId,
+        moonProfileIds: [...resolved.moonProfileIds]
+      },
       formatted: {
         date: formatCalendarDate(date, calendar),
-        time: formatClock(date),
+        time: formatClock(date, calendar),
         dateTime: formatCalendarDate(date, calendar, { includeTime: true })
       },
-      raw: { date }
+      raw: { date, calendar, region: resolved.region }
     };
   }
 }

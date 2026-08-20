@@ -1,0 +1,63 @@
+<div class="cf-manager-shell">
+  <aside class="cf-manager-list">
+    <div class="cf-manager-list-header">
+      <strong>{{localize "CALENDAR_FORGE.RegionManager.Regions"}}</strong>
+      <button type="button" data-action="newRegion"><i class="fa-solid fa-plus"></i></button>
+    </div>
+    <div class="cf-manager-items">
+      {{#each regions as |region|}}
+        <button type="button" class="cf-manager-item {{#if region.selected}}is-selected{{/if}}" data-action="selectRegion" data-region-id="{{region.id}}">
+          <span><strong>{{region.label}}</strong><small>{{region.providerId}}</small></span>
+          <span class="cf-manager-badges">
+            {{#if region.isDefault}}<i class="fa-solid fa-location-dot" data-tooltip="{{localize 'CALENDAR_FORGE.RegionManager.Default'}}"></i>{{/if}}
+            {{#if region.isWorld}}<i class="fa-solid fa-pen"></i>{{else}}<i class="fa-solid fa-box"></i>{{/if}}
+          </span>
+        </button>
+      {{/each}}
+    </div>
+    {{#if hasDefault}}<button type="button" class="cf-clear-default" data-action="clearDefaultRegion"><i class="fa-solid fa-xmark"></i> {{localize "CALENDAR_FORGE.RegionManager.ClearDefault"}}</button>{{/if}}
+  </aside>
+
+  <main class="cf-manager-editor">
+    {{#if hasSelection}}
+      <header class="cf-manager-toolbar">
+        <div><div class="cf-eyebrow">{{providerId}}</div><strong>{{definition.label.value}}</strong></div>
+        <div class="cf-manager-actions">
+          {{#unless isDefault}}<button type="button" data-action="setDefaultRegion"><i class="fa-solid fa-location-dot"></i> {{localize "CALENDAR_FORGE.RegionManager.SetDefault"}}</button>{{/unless}}
+          <button type="button" data-action="duplicateRegion"><i class="fa-solid fa-copy"></i> {{localize "CALENDAR_FORGE.RegionManager.Duplicate"}}</button>
+          {{#if editable}}<button type="button" class="cf-primary" data-action="saveRegion"><i class="fa-solid fa-floppy-disk"></i> {{localize "CALENDAR_FORGE.RegionManager.Save"}}</button>{{/if}}
+          {{#if editable}}{{#unless isNew}}<button type="button" class="cf-danger" data-action="deleteRegion"><i class="fa-solid fa-trash"></i></button>{{/unless}}{{/if}}
+        </div>
+      </header>
+
+      <div class="cf-manager-scroll">
+        <section class="cf-manager-section">
+          <h3>{{localize "CALENDAR_FORGE.RegionManager.Basics"}}</h3>
+          <div class="cf-form-grid two">
+            <label><span>{{localize "CALENDAR_FORGE.Fields.Id"}}</span><input name="region.id" value="{{definition.id}}" {{#unless isNew}}disabled{{/unless}}></label>
+            <label><span>{{localize "CALENDAR_FORGE.Fields.Name"}}</span><input name="region.label" value="{{definition.label.value}}" {{#unless editable}}disabled{{/unless}}></label>
+            <label><span>{{localize "CALENDAR_FORGE.Fields.Calendar"}}</span><select name="region.calendarId" {{#unless editable}}disabled{{/unless}}>{{#each calendars as |calendar|}}<option value="{{calendar.id}}" {{#if calendar.selected}}selected{{/if}}>{{calendar.label}}</option>{{/each}}</select></label>
+            <label><span>{{localize "CALENDAR_FORGE.Fields.TimeOffsetHours"}}</span><input type="number" step="0.25" name="region.offsetHours" value="{{offsetHours}}" {{#unless editable}}disabled{{/unless}}></label>
+          </div>
+          <p class="cf-help">{{localize "CALENDAR_FORGE.RegionManager.OffsetHelp"}}</p>
+        </section>
+
+        <section class="cf-manager-section">
+          <h3>{{localize "CALENDAR_FORGE.RegionManager.TemporalProfiles"}}</h3>
+          <label class="cf-full"><span>{{localize "CALENDAR_FORGE.Fields.SeasonProfile"}}</span><select name="region.seasonProfileId" {{#unless editable}}disabled{{/unless}}><option value="">{{localize "CALENDAR_FORGE.RegionManager.UseWorldDefault"}}</option>{{#each seasons as |season|}}<option value="{{season.id}}" {{#if season.selected}}selected{{/if}}>{{season.label}}</option>{{/each}}</select></label>
+          <div class="cf-checkbox-grid">
+            <span class="cf-field-label">{{localize "CALENDAR_FORGE.Fields.MoonProfiles"}}</span>
+            {{#each moons as |moon|}}<label><input type="checkbox" name="region.moons" value="{{moon.id}}" {{#if moon.selected}}checked{{/if}} {{#unless ../editable}}disabled{{/unless}}> {{moon.label}}</label>{{/each}}
+          </div>
+          <p class="cf-help">{{localize "CALENDAR_FORGE.RegionManager.ProfileHelp"}}</p>
+        </section>
+      </div>
+    {{else}}
+      <div class="cf-manager-empty">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <strong>{{localize "CALENDAR_FORGE.RegionManager.NoRegions"}}</strong>
+        <button type="button" data-action="newRegion">{{localize "CALENDAR_FORGE.RegionManager.CreateFirst"}}</button>
+      </div>
+    {{/if}}
+  </main>
+</div>

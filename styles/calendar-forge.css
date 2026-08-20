@@ -110,7 +110,7 @@
 .cf-weekdays,
 .cf-month-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--cf-week-length, 7), minmax(0, 1fr));
 }
 
 .cf-weekdays {
@@ -246,4 +246,186 @@ button.cf-day:hover { background: rgba(200, 173, 114, 0.065); }
 @media (max-width: 940px) {
   .cf-main { grid-template-columns: 1fr; }
   .cf-inspector { max-height: 260px; }
+}
+
+
+.cf-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.cf-region-select {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 190px;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--cf-border);
+  border-radius: 5px;
+  background: var(--cf-panel-soft);
+  color: var(--cf-muted);
+}
+.cf-region-select select {
+  flex: 1;
+  min-width: 0;
+  height: 1.8rem;
+  border: 0;
+  background: transparent;
+  color: var(--cf-text);
+}
+.cf-icon-button {
+  width: 2.1rem;
+  min-width: 2.1rem;
+  height: 2.1rem;
+  border: 1px solid var(--cf-border);
+  background: var(--cf-panel-soft);
+  color: var(--cf-text);
+}
+.cf-icon-button:hover { color: var(--cf-accent); border-color: var(--cf-accent); }
+.cf-inspector-region { margin-top: 0.35rem; color: var(--cf-blue); font-size: 0.8rem; }
+
+.calendar-forge-manager {
+  --cf-bg: rgba(24, 27, 31, 0.99);
+  --cf-panel: rgba(39, 43, 49, 0.97);
+  --cf-panel-soft: rgba(48, 53, 60, 0.82);
+  --cf-border: rgba(205, 184, 132, 0.22);
+  --cf-accent: #c8ad72;
+  --cf-text: #e9e5da;
+  --cf-muted: #a9adb3;
+  --cf-blue: #83aebb;
+  min-width: 820px;
+  min-height: 560px;
+}
+.calendar-forge-manager .window-content {
+  padding: 0;
+  background: var(--cf-bg);
+  color: var(--cf-text);
+}
+.cf-manager-shell {
+  display: grid;
+  grid-template-columns: 275px minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+}
+.cf-manager-list {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 0;
+  border-right: 1px solid var(--cf-border);
+  background: rgba(0,0,0,0.10);
+}
+.cf-manager-list-header,
+.cf-manager-toolbar,
+.cf-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+.cf-manager-list-header {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--cf-border);
+}
+.cf-manager-list-header button,
+.cf-manager-actions button,
+.cf-section-heading button,
+.cf-clear-default,
+.cf-manager-empty button,
+.cf-row-table-row button {
+  border: 1px solid var(--cf-border);
+  background: var(--cf-panel-soft);
+  color: var(--cf-text);
+}
+.cf-manager-list-header button:hover,
+.cf-manager-actions button:hover,
+.cf-section-heading button:hover,
+.cf-clear-default:hover,
+.cf-row-table-row button:hover { border-color: var(--cf-accent); color: var(--cf-accent); }
+.cf-manager-items { overflow: auto; padding: 0.35rem; }
+.cf-manager-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.6rem;
+  margin-bottom: 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--cf-text);
+  text-align: left;
+}
+.cf-manager-item:hover { background: rgba(200,173,114,0.06); }
+.cf-manager-item.is-selected { border-color: var(--cf-border); background: rgba(200,173,114,0.10); }
+.cf-manager-item > span:first-child { min-width: 0; display: flex; flex-direction: column; }
+.cf-manager-item strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cf-manager-item small { color: var(--cf-muted); font-size: 0.68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cf-manager-badges { display: flex; gap: 0.35rem; color: var(--cf-accent); }
+.cf-clear-default { margin: 0.5rem; min-height: 2rem; }
+.cf-manager-editor { display: grid; grid-template-rows: auto 1fr; min-width: 0; min-height: 0; background: var(--cf-bg); }
+.cf-manager-toolbar { padding: 0.8rem 1rem; border-bottom: 1px solid var(--cf-border); background: rgba(255,255,255,0.018); }
+.cf-manager-toolbar > div:first-child { min-width: 0; }
+.cf-manager-toolbar strong { font-size: 1.05rem; }
+.cf-manager-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.35rem; }
+.cf-manager-actions button { min-height: 2rem; padding-inline: 0.65rem; }
+.cf-manager-actions .cf-primary { border-color: rgba(200,173,114,0.48); color: var(--cf-accent); }
+.cf-manager-actions .cf-danger { color: #d59691; }
+.cf-manager-scroll { min-height: 0; overflow: auto; padding: 1rem; }
+.cf-manager-section {
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 7px;
+  background: rgba(0,0,0,0.10);
+}
+.cf-manager-section h3 { margin: 0 0 0.7rem; color: var(--cf-accent); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.cf-section-heading h3 { margin-bottom: 0; }
+.cf-section-heading { margin-bottom: 0.7rem; }
+.cf-form-grid { display: grid; gap: 0.7rem; }
+.cf-form-grid.two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.cf-form-grid.three { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.cf-form-grid.four { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.cf-manager-section label,
+.cf-checkbox-grid { color: var(--cf-muted); font-size: 0.75rem; }
+.cf-manager-section label > span,
+.cf-field-label { display: block; margin-bottom: 0.25rem; font-weight: 650; color: var(--cf-muted); }
+.cf-manager-section input,
+.cf-manager-section select,
+.cf-manager-section textarea {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.045);
+  color: var(--cf-text);
+}
+.cf-manager-section input:disabled,
+.cf-manager-section select:disabled,
+.cf-manager-section textarea:disabled { opacity: 0.62; }
+.cf-full { display: block; margin-top: 0.7rem; }
+.cf-help { margin: 0.55rem 0 0; color: var(--cf-muted); font-size: 0.75rem; line-height: 1.35; }
+.cf-row-table { display: grid; gap: 0.25rem; }
+.cf-row-table-head,
+.cf-row-table-row { display: grid; gap: 0.35rem; align-items: center; }
+.cf-weekday-table .cf-row-table-head,
+.cf-weekday-table .cf-row-table-row { grid-template-columns: 1.1fr 1.5fr 0.75fr 34px; }
+.cf-month-table .cf-row-table-head,
+.cf-month-table .cf-row-table-row { grid-template-columns: 1.05fr 1.35fr 0.7fr 70px 70px 34px; }
+.cf-row-table-head { color: var(--cf-muted); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
+.cf-row-table-row input { min-width: 0; }
+.cf-row-table-row button { width: 32px; min-width: 32px; height: 28px; }
+.cf-anchor-section { border-color: rgba(131,174,187,0.20); }
+.cf-checkbox-grid { margin-top: 0.8rem; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0.35rem 0.8rem; }
+.cf-checkbox-grid .cf-field-label { grid-column: 1 / -1; }
+.cf-checkbox-grid label { display: flex; align-items: center; gap: 0.4rem; color: var(--cf-text); }
+.cf-checkbox-grid input { width: auto; }
+.cf-manager-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; color: var(--cf-muted); }
+.cf-manager-empty > i { font-size: 2.2rem; color: var(--cf-accent); opacity: 0.7; }
+
+@media (max-width: 980px) {
+  .cf-manager-shell { grid-template-columns: 220px minmax(0,1fr); }
+  .cf-form-grid.three, .cf-form-grid.four { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .cf-month-table .cf-row-table-head { display: none; }
+  .cf-month-table .cf-row-table-row { grid-template-columns: repeat(2, minmax(0,1fr)); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.4rem; }
 }

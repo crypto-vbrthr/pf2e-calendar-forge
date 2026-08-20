@@ -40,6 +40,10 @@ export const BUILTIN_CALENDARS = [
     dateFormats: {
       date: { i18n: "CALENDAR_FORGE.Formats.Date" },
       dateTime: { i18n: "CALENDAR_FORGE.Formats.DateTime" }
+    },
+    defaultAnchor: {
+      worldTime: 0, year: 2026, monthId: "january", day: 1,
+      hour: 0, minute: 0, second: 0, weekdayIndex: 3
     }
   }
 ];

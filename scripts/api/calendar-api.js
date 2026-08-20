@@ -1,6 +1,6 @@
 import { API_VERSION, SCHEMA_VERSION } from "../constants.js";
 
-export function createCalendarApi({ temporal, providers, registries, events, openCalendar }) {
+export function createCalendarApi({ temporal, providers, registries, events, worldData, settings, openCalendar, openCalendarManager, openRegionManager }) {
   return Object.freeze({
     version: API_VERSION,
     schemaVersion: SCHEMA_VERSION,
@@ -25,6 +25,11 @@ export function createCalendarApi({ temporal, providers, registries, events, ope
       return temporal.toWorldTime(date, options);
     },
 
+    getAnchor(calendarId = null, options = {}) {
+      const calendar = temporal.getCalendar(calendarId, options);
+      return calendar ? temporal.getAnchor(calendar) : null;
+    },
+
     async advanceTime(seconds) {
       if (!game.user?.isGM) throw new Error("Only a GM may advance world time");
       return game.time.advance(Number(seconds));
@@ -39,11 +44,29 @@ export function createCalendarApi({ temporal, providers, registries, events, ope
       return openCalendar(options);
     },
 
+    openCalendarManager() {
+      if (!game.user?.isGM) return null;
+      return openCalendarManager();
+    },
+
+    openRegionManager() {
+      if (!game.user?.isGM) return null;
+      return openRegionManager();
+    },
+
     providers,
 
     calendars: Object.freeze({
       get: (id) => registries.calendars.get(id),
-      list: () => registries.calendars.list()
+      list: () => registries.calendars.list(),
+      isWorld: (id) => worldData.isWorldCalendar(id)
+    }),
+
+    regions: Object.freeze({
+      get: (id) => registries.regions.get(id),
+      list: () => registries.regions.list(),
+      defaultId: () => settings.defaultRegionId(),
+      isWorld: (id) => worldData.isWorldRegion(id)
     }),
 
     seasonProfiles: Object.freeze({

@@ -5,7 +5,9 @@
       "Open": "Calendar Forge öffnen",
       "Today": "Heute",
       "PreviousMonth": "Vorheriger Monat",
-      "NextMonth": "Nächster Monat"
+      "NextMonth": "Nächster Monat",
+      "ManageCalendars": "Kalender verwalten",
+      "ManageRegions": "Regionale Zeitkontexte verwalten"
     },
     "Sections": {
       "Events": "Ereignisse",
@@ -13,39 +15,66 @@
       "Season": "Jahreszeit"
     },
     "Messages": {
-      "NoEvents": "Keine besonderen Ereignisse an diesem Tag."
+      "NoEvents": "Keine besonderen Ereignisse an diesem Tag.",
+      "NoMoons": "Keine Monde für diesen Kontext konfiguriert.",
+      "Saved": "Gespeichert.",
+      "InvalidDefinition": "Die Definition ist ungültig:",
+      "ConfirmDeleteCalendar": "Diesen benutzerdefinierten Kalender wirklich löschen?",
+      "ConfirmDeleteRegion": "Diesen regionalen Zeitkontext wirklich löschen?",
+      "DeleteFailed": "Löschen nicht möglich:"
     },
     "Calendars": {
       "Gregorian": "Irdischer Kalender",
       "GregorianDescription": "Gregorianischer Kalender mit lokalisierten Monats- und Wochentagsnamen."
     },
-    "Eras": { "CE": "n. Chr." },
+    "Eras": {
+      "CE": "n. Chr."
+    },
     "Formats": {
       "Date": "{weekday}, {day}. {month} {year} {era}",
       "DateTime": "{weekday}, {day}. {month} {year} {era}, {hour}:{minute}"
     },
     "Months": {
-      "January": "Januar", "JanuaryShort": "Jan",
-      "February": "Februar", "FebruaryShort": "Feb",
-      "March": "März", "MarchShort": "Mär",
-      "April": "April", "AprilShort": "Apr",
-      "May": "Mai", "MayShort": "Mai",
-      "June": "Juni", "JuneShort": "Jun",
-      "July": "Juli", "JulyShort": "Jul",
-      "August": "August", "AugustShort": "Aug",
-      "September": "September", "SeptemberShort": "Sep",
-      "October": "Oktober", "OctoberShort": "Okt",
-      "November": "November", "NovemberShort": "Nov",
-      "December": "Dezember", "DecemberShort": "Dez"
+      "January": "Januar",
+      "JanuaryShort": "Jan",
+      "February": "Februar",
+      "FebruaryShort": "Feb",
+      "March": "März",
+      "MarchShort": "Mär",
+      "April": "April",
+      "AprilShort": "Apr",
+      "May": "Mai",
+      "MayShort": "Mai",
+      "June": "Juni",
+      "JuneShort": "Jun",
+      "July": "Juli",
+      "JulyShort": "Jul",
+      "August": "August",
+      "AugustShort": "Aug",
+      "September": "September",
+      "SeptemberShort": "Sep",
+      "October": "Oktober",
+      "OctoberShort": "Okt",
+      "November": "November",
+      "NovemberShort": "Nov",
+      "December": "Dezember",
+      "DecemberShort": "Dez"
     },
     "Weekdays": {
-      "Monday": "Montag", "MondayShort": "Mo",
-      "Tuesday": "Dienstag", "TuesdayShort": "Di",
-      "Wednesday": "Mittwoch", "WednesdayShort": "Mi",
-      "Thursday": "Donnerstag", "ThursdayShort": "Do",
-      "Friday": "Freitag", "FridayShort": "Fr",
-      "Saturday": "Samstag", "SaturdayShort": "Sa",
-      "Sunday": "Sonntag", "SundayShort": "So"
+      "Monday": "Montag",
+      "MondayShort": "Mo",
+      "Tuesday": "Dienstag",
+      "TuesdayShort": "Di",
+      "Wednesday": "Mittwoch",
+      "WednesdayShort": "Mi",
+      "Thursday": "Donnerstag",
+      "ThursdayShort": "Do",
+      "Friday": "Freitag",
+      "FridayShort": "Fr",
+      "Saturday": "Samstag",
+      "SaturdayShort": "Sa",
+      "Sunday": "Sonntag",
+      "SundayShort": "So"
     },
     "Seasons": {
       "Spring": "Frühling",
@@ -56,7 +85,9 @@
     "SeasonProfiles": {
       "NorthernTemperate": "Gemäßigte Nordhalbkugel"
     },
-    "Moons": { "Moon": "Mond" },
+    "Moons": {
+      "Moon": "Mond"
+    },
     "MoonPhases": {
       "New": "Neumond",
       "WaxingCrescent": "Zunehmende Sichel",
@@ -84,10 +115,18 @@
         "Name": "Anker: Monats-ID",
         "Hint": "Stabile Monats-ID des aktiven Kalenders, z. B. january oder eine ID eines Content-Moduls."
       },
-      "AnchorDay": { "Name": "Anker: Tag" },
-      "AnchorHour": { "Name": "Anker: Stunde" },
-      "AnchorMinute": { "Name": "Anker: Minute" },
-      "AnchorSecond": { "Name": "Anker: Sekunde" },
+      "AnchorDay": {
+        "Name": "Anker: Tag"
+      },
+      "AnchorHour": {
+        "Name": "Anker: Stunde"
+      },
+      "AnchorMinute": {
+        "Name": "Anker: Minute"
+      },
+      "AnchorSecond": {
+        "Name": "Anker: Sekunde"
+      },
       "AnchorWeekday": {
         "Name": "Anker: Wochentagsindex",
         "Hint": "Nullbasierter Index des Wochentags am Ankerdatum. Beim Standardkalender ist 0 Montag."
@@ -99,7 +138,93 @@
       "MoonProfiles": {
         "Name": "Aktive Mondprofile",
         "Hint": "Kommagetrennte IDs aktiver Mondprofile."
+      },
+      "DefaultRegion": {
+        "Name": "Standardregion",
+        "Hint": "Wird über die Calendar-Forge-Oberfläche verwaltet."
       }
+    },
+    "RegionSelector": {
+      "Default": "Weltstandard",
+      "DefaultWithRegion": "Weltstandard ({region})",
+      "World": "Ohne Region"
+    },
+    "Fields": {
+      "Id": "ID",
+      "Name": "Name",
+      "Description": "Beschreibung",
+      "Era": "Epoche",
+      "SecondsPerMinute": "Sekunden pro Minute",
+      "MinutesPerHour": "Minuten pro Stunde",
+      "HoursPerDay": "Stunden pro Tag",
+      "Short": "Kurzname",
+      "Days": "Tage",
+      "LeapDays": "zusätzliche Schalttage",
+      "LeapRule": "Schaltregel",
+      "LeapInterval": "Schaltintervall",
+      "LeapOffset": "Schaltoffset",
+      "DateFormat": "Datumsformat",
+      "DateTimeFormat": "Datum-/Zeitformat",
+      "WorldTime": "Foundry-Weltzeit",
+      "Year": "Jahr",
+      "Month": "Monat",
+      "Day": "Tag",
+      "Hour": "Stunde",
+      "Minute": "Minute",
+      "Second": "Sekunde",
+      "Weekday": "Wochentag",
+      "Calendar": "Kalender",
+      "TimeOffsetHours": "Zeitversatz in Stunden",
+      "SeasonProfile": "Jahreszeitenprofil",
+      "MoonProfiles": "Mondprofile"
+    },
+    "CalendarManager": {
+      "Title": "Calendar Forge – Kalenderdefinitionen",
+      "Calendars": "Kalender",
+      "New": "Neuen Kalender anlegen",
+      "Active": "Weltstandardkalender",
+      "Editable": "Benutzerdefiniert und editierbar",
+      "Provider": "Von einem Modul bereitgestellt",
+      "SetActive": "Als Weltstandard",
+      "Duplicate": "Duplizieren",
+      "Save": "Speichern",
+      "SaveAnchor": "Zeitanker speichern",
+      "Basics": "Grunddaten",
+      "TimeStructure": "Zeitstruktur",
+      "Weekdays": "Wochentage",
+      "Months": "Monate",
+      "AddWeekday": "Wochentag hinzufügen",
+      "AddMonth": "Monat hinzufügen",
+      "LeapRules": "Schaltregeln",
+      "Formats": "Datumsformate",
+      "Anchor": "Zeitanker",
+      "FormatHelp": "Verfügbare Platzhalter: {weekday}, {weekdayShort}, {day}, {month}, {monthShort}, {year}, {era}, {hour}, {minute}, {second}.",
+      "AnchorHelp": "Dieser Anker ordnet genau einen Foundry-worldTime-Wert einem Datum dieses Kalenders zu. Calendar Forge führt weiterhin keine zweite laufende Uhr.",
+      "NoCalendars": "Es ist kein Kalender registriert.",
+      "NewMonth": "Neuer Monat",
+      "NewWeekday": "Neuer Tag",
+      "Leap": {
+        "none": "Keine Schalttage",
+        "gregorian": "Gregorianische Regel",
+        "interval": "Regelmäßiges Intervall"
+      }
+    },
+    "RegionManager": {
+      "Title": "Calendar Forge – Regionale Zeitkontexte",
+      "Regions": "Regionen",
+      "Default": "Weltstandardregion",
+      "ClearDefault": "Weltstandardregion aufheben",
+      "SetDefault": "Als Weltstandardregion",
+      "Duplicate": "Duplizieren",
+      "Save": "Speichern",
+      "Basics": "Regionaler Kontext",
+      "TemporalProfiles": "Zeit-, Saison- und Mondprofile",
+      "NewRegion": "Neue Region",
+      "UseWorldDefault": "Weltstandard verwenden",
+      "OffsetHelp": "Der Zeitversatz ändert nur die regionale Darstellung. Die zugrunde liegende Foundry-Weltzeit bleibt unverändert.",
+      "ProfileHelp": "Eine Region kann einen anderen Kalender, einen festen lokalen Zeitversatz sowie eigene Saison- und Mondprofile verwenden.",
+      "NoRegions": "Noch keine regionalen Zeitkontexte angelegt.",
+      "CreateFirst": "Erste Region anlegen"
     }
   }
 }

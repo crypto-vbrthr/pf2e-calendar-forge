@@ -14,32 +14,49 @@ export function registerSettings() {
     type: String,
     default: "earth-gregorian"
   });
+  register(SETTINGS.DEFAULT_REGION, {
+    name: "CALENDAR_FORGE.Settings.DefaultRegion.Name",
+    hint: "CALENDAR_FORGE.Settings.DefaultRegion.Hint",
+    scope: "world",
+    config: false,
+    type: String,
+    default: ""
+  });
+  register(SETTINGS.WORLD_DATA, {
+    scope: "world",
+    config: false,
+    type: Object,
+    default: { calendars: [], regions: [], anchors: {} }
+  });
+
+  // Legacy 0.1.x anchor settings remain as a migration-safe fallback. New anchors are
+  // stored per calendar in WORLD_DATA and edited from Calendar Forge itself.
   register(SETTINGS.ANCHOR_WORLD_TIME, {
     name: "CALENDAR_FORGE.Settings.AnchorWorldTime.Name",
     hint: "CALENDAR_FORGE.Settings.AnchorWorldTime.Hint",
-    scope: "world", config: true, type: Number, default: 0
+    scope: "world", config: false, type: Number, default: 0
   });
   register(SETTINGS.ANCHOR_YEAR, {
     name: "CALENDAR_FORGE.Settings.AnchorYear.Name",
     hint: "CALENDAR_FORGE.Settings.AnchorYear.Hint",
-    scope: "world", config: true, type: Number, default: 2026
+    scope: "world", config: false, type: Number, default: 2026
   });
   register(SETTINGS.ANCHOR_MONTH, {
     name: "CALENDAR_FORGE.Settings.AnchorMonth.Name",
     hint: "CALENDAR_FORGE.Settings.AnchorMonth.Hint",
-    scope: "world", config: true, type: String, default: "january"
+    scope: "world", config: false, type: String, default: "january"
   });
   register(SETTINGS.ANCHOR_DAY, {
     name: "CALENDAR_FORGE.Settings.AnchorDay.Name",
-    scope: "world", config: true, type: Number, default: 1
+    scope: "world", config: false, type: Number, default: 1
   });
   register(SETTINGS.ANCHOR_HOUR, {
     name: "CALENDAR_FORGE.Settings.AnchorHour.Name",
-    scope: "world", config: true, type: Number, default: 0
+    scope: "world", config: false, type: Number, default: 0
   });
   register(SETTINGS.ANCHOR_MINUTE, {
     name: "CALENDAR_FORGE.Settings.AnchorMinute.Name",
-    scope: "world", config: true, type: Number, default: 0
+    scope: "world", config: false, type: Number, default: 0
   });
   register(SETTINGS.ANCHOR_SECOND, {
     name: "CALENDAR_FORGE.Settings.AnchorSecond.Name",
@@ -48,7 +65,7 @@ export function registerSettings() {
   register(SETTINGS.ANCHOR_WEEKDAY, {
     name: "CALENDAR_FORGE.Settings.AnchorWeekday.Name",
     hint: "CALENDAR_FORGE.Settings.AnchorWeekday.Hint",
-    scope: "world", config: true, type: Number, default: 3
+    scope: "world", config: false, type: Number, default: 3
   });
   register(SETTINGS.ACTIVE_SEASON_PROFILE, {
     name: "CALENDAR_FORGE.Settings.SeasonProfile.Name",
@@ -66,6 +83,15 @@ export const SettingsAdapter = {
   activeCalendarId() {
     return game.settings.get(MODULE_ID, SETTINGS.ACTIVE_CALENDAR);
   },
+  async setActiveCalendarId(id) {
+    return game.settings.set(MODULE_ID, SETTINGS.ACTIVE_CALENDAR, id);
+  },
+  defaultRegionId() {
+    return game.settings.get(MODULE_ID, SETTINGS.DEFAULT_REGION) || null;
+  },
+  async setDefaultRegionId(id) {
+    return game.settings.set(MODULE_ID, SETTINGS.DEFAULT_REGION, id ?? "");
+  },
   activeSeasonProfileId() {
     return game.settings.get(MODULE_ID, SETTINGS.ACTIVE_SEASON_PROFILE);
   },
@@ -73,7 +99,7 @@ export const SettingsAdapter = {
     return String(game.settings.get(MODULE_ID, SETTINGS.ACTIVE_MOON_PROFILES) ?? "")
       .split(",").map((value) => value.trim()).filter(Boolean);
   },
-  anchor(calendar) {
+  legacyAnchor(calendar) {
     const preferredMonth = game.settings.get(MODULE_ID, SETTINGS.ANCHOR_MONTH);
     const monthId = calendar.months.some((month) => month.id === preferredMonth)
       ? preferredMonth

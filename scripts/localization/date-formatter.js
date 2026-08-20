@@ -1,7 +1,7 @@
 import { resolveLabel, interpolateFormat } from "./label-resolver.js";
 
-function pad(value) {
-  return String(value).padStart(2, "0");
+function pad(value, width = 2) {
+  return String(value).padStart(width, "0");
 }
 
 export function formatCalendarDate(date, calendar, { includeTime = false } = {}) {
@@ -10,10 +10,10 @@ export function formatCalendarDate(date, calendar, { includeTime = false } = {})
   const values = {
     year: date.year,
     month: resolveLabel(month?.label, month?.id ?? ""),
-    monthShort: resolveLabel(month?.shortLabel, month?.id ?? ""),
+    monthShort: resolveLabel(month?.shortLabel ?? month?.label, month?.id ?? ""),
     day: date.day,
     weekday: resolveLabel(weekday?.label, weekday?.id ?? ""),
-    weekdayShort: resolveLabel(weekday?.shortLabel, weekday?.id ?? ""),
+    weekdayShort: resolveLabel(weekday?.shortLabel ?? weekday?.label, weekday?.id ?? ""),
     era: resolveLabel(calendar.era, ""),
     hour: pad(date.hour ?? 0),
     minute: pad(date.minute ?? 0),
@@ -26,6 +26,10 @@ export function formatCalendarDate(date, calendar, { includeTime = false } = {})
   return interpolateFormat(format, values).replace(/\s+/g, " ").trim();
 }
 
-export function formatClock(date) {
-  return `${pad(date.hour ?? 0)}:${pad(date.minute ?? 0)}`;
+export function formatClock(date, calendar = null) {
+  const hoursPerDay = Number(calendar?.time?.hoursPerDay ?? 24);
+  const minutesPerHour = Number(calendar?.time?.minutesPerHour ?? 60);
+  const hourWidth = Math.max(2, String(Math.max(0, hoursPerDay - 1)).length);
+  const minuteWidth = Math.max(2, String(Math.max(0, minutesPerHour - 1)).length);
+  return `${pad(date.hour ?? 0, hourWidth)}:${pad(date.minute ?? 0, minuteWidth)}`;
 }

@@ -1,9 +1,11 @@
 export const MODULE_ID = "pf2e-calendar-forge";
-export const API_VERSION = 1;
+export const API_VERSION = 2;
 export const SCHEMA_VERSION = 1;
 
 export const SETTINGS = Object.freeze({
   ACTIVE_CALENDAR: "activeCalendar",
+  DEFAULT_REGION: "defaultRegion",
+  WORLD_DATA: "worldData",
   ANCHOR_WORLD_TIME: "anchorWorldTime",
   ANCHOR_YEAR: "anchorYear",
   ANCHOR_MONTH: "anchorMonth",
