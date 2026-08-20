@@ -147,19 +147,17 @@
   justify-content: space-between;
   min-width: 0;
   padding: 0.55rem;
-  border: 0;
-  border-right: 1px solid rgba(255,255,255,0.055);
-  border-bottom: 1px solid rgba(255,255,255,0.055);
-  border-radius: 0;
-  background: transparent;
+  border: 1px solid rgba(255,255,255,0.075);
+  border-radius: 2px;
+  background: rgba(255,255,255,0.008);
   color: var(--cf-text);
   text-align: left;
 }
 
 button.cf-day { cursor: pointer; }
-button.cf-day:hover { background: rgba(200, 173, 114, 0.065); }
+button.cf-day:hover { border-color: rgba(200, 173, 114, 0.28); background: rgba(200, 173, 114, 0.065); }
 .cf-day.is-today { box-shadow: inset 0 0 0 1px var(--cf-accent); }
-.cf-day.is-selected { background: rgba(200, 173, 114, 0.105); }
+.cf-day.is-selected { border-color: rgba(200, 173, 114, 0.34); background: rgba(200, 173, 114, 0.105); }
 .cf-day-number { font-size: 1rem; font-weight: 650; }
 .cf-day.is-today .cf-day-number { color: var(--cf-accent); }
 .cf-empty { opacity: 0.25; }

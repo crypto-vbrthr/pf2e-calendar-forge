@@ -1,8 +1,12 @@
-# Calendar Forge 0.6.1
+# Calendar Forge 0.6.2
 
 Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock. Calendar Forge translates that absolute time into localized calendar dates, regional contexts, seasons, moon states, astronomy, holidays, and chronology for users and other modules.
 
 
+
+## 0.6.2 – Month Cell Framing Polish
+
+0.6.2 is a tiny visual finishing pass. Every day in the month view now has a complete, restrained frame so the day number and its event markers read immediately as one unit. Hover and selected states strengthen that frame slightly, while the current-day accent remains distinct. No data, API, provider, calendar, or time behavior changes.
 
 ## 0.6.1 – UI Polish
 
