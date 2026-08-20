@@ -274,6 +274,21 @@ button.cf-day:hover { background: rgba(200, 173, 114, 0.065); }
   border: 0;
   background: transparent;
   color: var(--cf-text);
+  color-scheme: dark;
+}
+.cf-region-select select option,
+.calendar-forge-manager select option {
+  background: #272b31;
+  color: #e9e5da;
+}
+.cf-region-select select option:checked,
+.calendar-forge-manager select option:checked {
+  background: #3b4650;
+  color: #ffffff;
+}
+.cf-region-select select option:disabled,
+.calendar-forge-manager select option:disabled {
+  color: #8f949b;
 }
 .cf-icon-button {
   width: 2.1rem;
@@ -399,6 +414,10 @@ button.cf-day:hover { background: rgba(200, 173, 114, 0.065); }
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(255,255,255,0.045);
   color: var(--cf-text);
+}
+.cf-manager-section select {
+  color-scheme: dark;
+  background-color: #30353c;
 }
 .cf-manager-section input:disabled,
 .cf-manager-section select:disabled,

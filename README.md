@@ -1,6 +1,14 @@
-# Calendar Forge 0.2.0
+# Calendar Forge 0.2.1
 
 Calendar Forge is a Foundry VTT 14 calendar and temporal-context service. Foundry `game.time.worldTime` remains the only running clock; Calendar Forge translates that absolute time into localized calendar dates and regional temporal contexts.
+
+
+## 0.2.1 – Dropdown Readability Fix
+
+- Native select controls now explicitly request a dark color scheme.
+- Dropdown option lists use a dark background with high-contrast light text on Windows/Chromium.
+- Selected and disabled options have distinct readable states.
+- Applies to the Calendar Forge main region selector and all calendar/region manager dropdowns.
 
 ## 0.2.0 – Calendar Definitions & Regional Time Context
 
